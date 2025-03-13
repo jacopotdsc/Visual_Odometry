@@ -1,7 +1,9 @@
 #include "utils_file.h"
 
-std::vector<PointDataMeasurement> read_meas_file(const std::string& file_path) {
-    std::vector<PointDataMeasurement> points;
+//std::vector<PointDataMeasurement> read_meas_file(const std::string& file_path) {
+std::vector<Vectorf<11>> read_meas_file(const std::string& file_path) {
+    //std::vector<PointDataMeasurement> points;
+    std::vector<Vectorf<11>> points;
     std::ifstream input_stream(file_path);
     std::string word;
     std::string line;
@@ -19,21 +21,26 @@ std::vector<PointDataMeasurement> read_meas_file(const std::string& file_path) {
     // Leggere i punti
     while (std::getline(input_stream, line)) {
         std::stringstream ss(line);
-        PointDataMeasurement pointData;
+        //PointDataMeasurement pointData;
+        Vectorf<11> pointData;
         ss >> word; // point
-        ss >> word; // POINT_ID_CURRENT_MESUREMENT
+
+        ss >> value; // POINT_ID_CURRENT_MESUREMENT
+        pointData(0) = value;
+
         ss >> word; // ACTUAL_POINT_ID
 
         // Take IMAGE_POINT
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             ss >> value;
-            pointData.image_point(i) = value;
+            //pointData.image_point(i) = value;
         }
 
         // Take APPEARANCE
-        for (int i = 0; i < 10; i++) {
+        for (int i = 1; i < 11; i++) {
             ss >> value;
-            pointData.appearance(i) = value;
+            //pointData.appearance(i) = value;
+            pointData(i) = value;
         }
         
         points.push_back(pointData);

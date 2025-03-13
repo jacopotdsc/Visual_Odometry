@@ -8,20 +8,33 @@ set(CMAKE_CXX_FLAGS "-Wall -O2")
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(include)
+include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/kdtree)
 
-set(SRC_DIR src)
-set(INCLUDE_DIR include)
-set(TEST_DIR src/test_file)
-set(EXEC_DIR exec)
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(KD_TREE_DIR ${CMAKE_SOURCE_DIR}/include/kdtree)  # Fixed directory name
+set(TEST_DIR ${CMAKE_SOURCE_DIR}/src/test_file)
+set(EXEC_DIR ../exec)  # Fixed output directory
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../${EXEC_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXEC_DIR})
 
+# Define executable for test_utils_file
 add_executable(
     test_utils_file 
     ${TEST_DIR}/test_utils_file.cpp 
     ${SRC_DIR}/utils_file.cpp
-    )
+)
 
-target_include_directories(test_utils_file PRIVATE ${INCLUDE_DIR})
+# Define executable for test_kd_tree
+add_executable(
+    test_kd_tree
+    ${TEST_DIR}/eigen_kdtree_test.cpp
+    ${SRC_DIR}/utils_file.cpp
+)
+
+# Set include directories for targets
+target_include_directories(test_utils_file PRIVATE ${INCLUDE_DIR} ${KD_TREE_DIR})
+target_include_directories(test_kd_tree PRIVATE ${INCLUDE_DIR} ${KD_TREE_DIR})
+
 target_link_libraries(test_utils_file Eigen3::Eigen)
+target_link_libraries(test_kd_tree Eigen3::Eigen)
