@@ -4,11 +4,9 @@
 #include <vector>
 #include <Eigen/Core>
 
-// Definizione di un vettore generico di dimensione dim
 template <int dim>
 using Vectorf = Eigen::Matrix<float, dim, 1>;
 
-// Struttura per un punto con appearance
 struct PointDataMeasurement {
     Eigen::Vector2f image_point;  // IMAGE_POINT
     Vectorf<10> appearance;  // APPEARANCE

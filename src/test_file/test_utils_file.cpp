@@ -1,7 +1,9 @@
 #include <iostream>
 #include "utils_file.h"
+#include "PointCloud.h"
 
 int main() {
+    std::cout << "TEST: read_meas_file" << std::endl;
     std::string file_path_meas = "../data/meas-00000.dat"; 
     std::vector<PointDataMeasurement> points = read_meas_file(file_path_meas);
     
@@ -10,7 +12,6 @@ int main() {
         return -1;
     }
     
-    std::cout << "TEST: read_meas_file" << std::endl;
     std::cout << "Read " << points.size() << " from point cloud." << std::endl;
     for (size_t i = 0; i < std::min(points.size(), size_t(5)); i++) {
         std::cout << "Point " << i << ": (" 
@@ -27,9 +28,17 @@ int main() {
 
     /********************************************************************/
     
-    std::cout << "TEST: read_camera_file" << std::endl;
+    std::cout << "\nTEST: read_camera_file" << std::endl;
     std::string file_path_camera = "../data/camera.dat";
     CameraParameters cam_params = read_camera_file(file_path_camera);
     std::cout << "Intrinsic Matrix (K):\n" << cam_params.K << "\n";
     std::cout << "Camera-to-Robot Transformation Matrix (T_cam_robot):\n" << cam_params.T_cam_robot << "\n";
+
+    /********************************************************************/
+
+    std::cout << "\nTEST: PointCloud" << std::endl;
+    PointCloud point_cloud(points);
+
+    std::cout << "PointCloud contains " << point_cloud.size() << " points.\n";
+
 }
