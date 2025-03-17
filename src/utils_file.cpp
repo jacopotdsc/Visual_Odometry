@@ -1,9 +1,8 @@
 #include "utils_file.h"
 
-//std::vector<PointDataMeasurement> read_meas_file(const std::string& file_path) {
-std::vector<Vectorf<11>> read_meas_file(const std::string& file_path) {
+ContainerType read_meas_file(const std::string& file_path) {
     //std::vector<PointDataMeasurement> points;
-    std::vector<Vectorf<11>> points;
+    ContainerType points;
     std::ifstream input_stream(file_path);
     std::string word;
     std::string line;

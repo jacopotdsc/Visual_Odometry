@@ -5,10 +5,10 @@
 
 template <typename Iterator_>
 int computeMeanAndCovariance(Eigen::Matrix<typename Iterator_::value_type::Scalar,
-                                           Iterator_::value_type::RowsAtCompileTime, 1>& mean,
+                                           Iterator_::value_type::RowsAtCompileTime-1, 1>& mean,
                              Eigen::Matrix<typename Iterator_::value_type::Scalar,
-                                           Iterator_::value_type::RowsAtCompileTime,
-                                           Iterator_::value_type::RowsAtCompileTime>& cov,
+                                           Iterator_::value_type::RowsAtCompileTime-1,
+                                           Iterator_::value_type::RowsAtCompileTime-1>& cov,
                              Iterator_ begin,
                              Iterator_ end) {
   // mean computed as 1/(end-start) Sum_k={start..end} x_k
@@ -18,9 +18,10 @@ int computeMeanAndCovariance(Eigen::Matrix<typename Iterator_::value_type::Scala
   cov.setZero();
   int k=0;
   for (auto it=begin; it!=end; ++it) {
+    auto dim = Iterator_::value_type::RowsAtCompileTime;
     const auto& v=*it;
-    mean += v;
-    cov  += v * v.transpose();
+    mean += v.tail(dim-1);
+    cov  += v.tail(dim-1) * v.tail(dim-1).transpose();
     ++k;
   }
   mean *= (1./k);

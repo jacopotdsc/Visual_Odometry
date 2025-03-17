@@ -2,6 +2,7 @@
 #include <vector>
 #include "utils_file.h"
 
+/*
 class PointCloud {
 
     private:
@@ -21,3 +22,4 @@ class PointCloud {
             return point_cloud_vector.size();
         }
 };
+*/

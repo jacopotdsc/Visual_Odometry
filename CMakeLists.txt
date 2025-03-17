@@ -12,9 +12,9 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/kdtr
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
-set(KD_TREE_DIR ${CMAKE_SOURCE_DIR}/include/kdtree)  # Fixed directory name
+set(KD_TREE_DIR ${CMAKE_SOURCE_DIR}/include/kdtree)  
 set(TEST_DIR ${CMAKE_SOURCE_DIR}/src/test_file)
-set(EXEC_DIR ../exec)  # Fixed output directory
+set(EXEC_DIR ../exec)  
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXEC_DIR})
 

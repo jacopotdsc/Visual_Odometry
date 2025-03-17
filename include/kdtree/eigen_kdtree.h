@@ -1,9 +1,7 @@
 #include <memory>
 #include "split.h"
-#include "plane_side_predicate.h"
 #include "eigen_covariance.h"
 #include "brute_force_search.h"
-
 
 template <typename IteratorType_>
 class TreeNode_ {
@@ -12,7 +10,7 @@ public:
   using PointType = typename IteratorType_::value_type;
   using Scalar    = typename PointType::Scalar;
   static constexpr int Dim = PointType::RowsAtCompileTime;
-  using CovarianceType = Eigen::Matrix<Scalar, Dim, Dim>;
+  using CovarianceType = Eigen::Matrix<Scalar, Dim-1, Dim-1>;
   using ThisType  = TreeNode_<IteratorType>;
   using PtrType = std::unique_ptr < ThisType  >;
   using AnswerType = std::vector<PointType* >;
@@ -30,7 +28,11 @@ public:
     computeMeanAndCovariance(_mean, cov, _begin, _end);
     _normal = largestEigenVector(cov);
 
-    IteratorType middle = split(_begin, _end, PlaneSidePredicate_<PointType>(_mean, _normal) );
+    IteratorType middle = split(_begin, _end,
+                                [&](const PointType& v)->bool {
+                                  return (v.tail(Dim-1)-_mean).dot(_normal) < Scalar(0);
+                                }
+                                );
     _left  = PtrType(new ThisType(_begin, middle, max_points_in_leaf) );
     _right = PtrType(new ThisType(middle, _end,   max_points_in_leaf) );
   }
@@ -42,7 +44,7 @@ public:
       bruteForceSearch(answers, _begin, _end, query, norm);
       return;
     }
-    Scalar distance_from_split_plane =  (query-_mean).dot(_normal);
+    Scalar distance_from_split_plane =  (query.tail(Dim-1)-_mean).dot(_normal);
     if (distance_from_split_plane<Scalar(0))
       _left->fastSearch(answers,query,norm);
     else
@@ -56,7 +58,7 @@ public:
       bruteForceSearch(answers, _begin, _end, query, norm);
       return;
     }
-    Scalar distance_from_split_plane =  (query-_mean).dot(_normal);
+    Scalar distance_from_split_plane =  (query.tail(Dim-1)-_mean).dot(_normal);
     if (distance_from_split_plane < -norm )
       _left->fullSearch(answers,query, norm);
     else if (distance_from_split_plane > norm )
@@ -67,27 +69,26 @@ public:
     }
   }
 
-  void fullSearchCustom(AnswerType& answers,
-                  const PointType& query,
-                      Scalar norm) {
+  void fullSearchCustom(typename IteratorType_::value_type* answers,
+                        const PointType& query,
+                        Scalar norm) {
     if (! _left && !_right) {
-      bruteForceSearch(answers, _begin, _end, query, norm);
-    return;
+      bruteForceSearchCustom(answers, _begin, _end, query);
+      return;
     }
-
     Scalar distance_from_split_plane =  (query.tail(Dim-1)-_mean).dot(_normal);
-
     if (distance_from_split_plane < -norm )
-      _left->fullSearch(answers,query, norm);
+      _left->fullSearchCustom(answers,query, norm);
     else if (distance_from_split_plane > norm )
-      _right->fullSearch(answers,query,norm);
+      _right->fullSearchCustom(answers,query,norm);
     else {
-      _left->fullSearch(answers,query, norm);
-      _right->fullSearch(answers,query,norm);
+      _left->fullSearchCustom(answers,query, norm);
+      _right->fullSearchCustom(answers,query,norm);
     }
   }
+
 protected:
-  PointType _mean, _normal;
+  Eigen::Matrix<Scalar,Dim-1, 1> _mean, _normal;
   IteratorType _begin, _end;
   PtrType _left, _right;
 };
