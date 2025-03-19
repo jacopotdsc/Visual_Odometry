@@ -17,3 +17,5 @@ struct CameraParameters {
 ContainerType read_meas_file(const std::string& file_path);
 CameraParameters read_camera_file(const std::string& file_path);
 
+bool all_same_values(const std::vector<float>& values); 
+bool are_identical(const std::vector<float>& v1, const std::vector<float>& v2);

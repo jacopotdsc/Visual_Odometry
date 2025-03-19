@@ -77,3 +77,12 @@ CameraParameters read_camera_file(const std::string& file_path) {
     input_stream.close();
     return cam_params;
 }
+
+
+bool all_same_values(const std::vector<float>& values) {
+    return std::all_of(values.begin() + 1, values.end(), [&](float v) { return v == values[1]; });
+}
+  
+bool are_identical(const std::vector<float>& v1, const std::vector<float>& v2) {
+return std::equal(v1.begin()+1, v1.end(), v2.begin()+1);
+}

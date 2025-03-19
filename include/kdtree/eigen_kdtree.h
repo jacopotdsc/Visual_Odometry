@@ -87,31 +87,35 @@ public:
     }
   }
 
-  PointType* fullSearchCustom_v2(const PointType& query,
-        Scalar norm) {
+  PointType* fullSearchCustom_v2( const PointType& query,
+                                  Scalar norm) {
     if (! _left && !_right) {
       return bruteForceSearchCustom_v2(_begin, _end, query, norm);
     }
     Scalar distance_from_split_plane =  (query.tail(Dim-1)-_mean).dot(_normal);
 
-    if (distance_from_split_plane < -norm )
+    if (distance_from_split_plane < -norm ){
       return _left->fullSearchCustom_v2(query, norm);
-
-    if (distance_from_split_plane > norm )
+    }
+    else if (distance_from_split_plane > norm ){
       return _right->fullSearchCustom_v2(query, norm);
+    }
 
-    PointType* p_left  = _left->fullSearchCustom_v2(query, norm);
-    PointType* p_right = _right->fullSearchCustom_v2(query, norm);
-    Scalar d_left=norm*norm;
-    Scalar d_right=norm*norm;
-    if (p_left)
-      d_left=((*p_left)-query).tail(Dim-1).squaredNorm();
-    if (p_right)
-      d_right=((*p_right)-query).tail(Dim-1).squaredNorm();
-    if (d_left<d_right)
-      return p_left;
+    PointType* point_left  = _left->fullSearchCustom_v2(query, norm);
+    PointType* point_right = _right->fullSearchCustom_v2(query, norm);
+    Scalar distance_left = norm*norm;
+    Scalar distance_right = norm*norm;
 
-    return p_right;
+    if (point_left)
+      distance_left=((*point_left)-query).tail(Dim-1).squaredNorm();
+    if (point_right)
+      distance_right=((*point_right)-query).tail(Dim-1).squaredNorm();
+    if (distance_left < distance_right){
+      return point_left;
+    }
+    else{
+      return point_right;
+    }
   }
 
 protected:
