@@ -18,10 +18,9 @@ int computeMeanAndCovariance(Eigen::Matrix<typename Iterator_::value_type::Scala
   cov.setZero();
   int k=0;
   for (auto it=begin; it!=end; ++it) {
-    auto dim = Iterator_::value_type::RowsAtCompileTime;
-    const auto& v=*it;
-    mean += v.tail(dim-1);
-    cov  += v.tail(dim-1) * v.tail(dim-1).transpose();
+    const auto& v=(*it).tail(Iterator_::value_type::RowsAtCompileTime-1);
+    mean += v;
+    cov  += v * v.transpose();
     ++k;
   }
   mean *= (1./k);
