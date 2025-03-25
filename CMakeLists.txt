@@ -18,14 +18,14 @@ set(EXEC_DIR ../exec)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXEC_DIR})
 
-# Define executable for test_utils_file
+# Define executable for test_utils_file: functions on files
 add_executable(
     test_utils_file 
     ${TEST_DIR}/test_utils_file.cpp 
     ${SRC_DIR}/utils_file.cpp
 )
 
-# Define executable for test_kd_tree
+# Define executable for test_kd_tree: functions for kd-tree
 add_executable(
     test_kd_tree
     ${TEST_DIR}/eigen_kdtree_test.cpp
