@@ -6,17 +6,25 @@ int main() {
     std::cout << "TEST: read_meas_file" << std::endl;
     std::string file_path_meas = "../data/meas-00000.dat"; 
     //std::vector<PointDataMeasurement> points = read_meas_file(file_path_meas);
-   ContainerType points = read_meas_file(file_path_meas);
-    
-    std::cout << "Read " << points.size() << " from point cloud." << std::endl;
+    PointCloud point_cloud = read_meas_file(file_path_meas);
+    const auto point_vec = point_cloud.getPoints();
+
+    if (point_vec.empty()) {
+        std::cerr << "Error: No points found in the point cloud." << std::endl;
+        return -1; 
+    }
+
+    std::cout << "Read " << point_vec.size() << " from point cloud." << std::endl;
     for (size_t i = 0; i < size_t(5); i++) {
-        std::cout << "Point " << points[i][0] //<< " (local ID: " << points[i].point_id_current_measurement
-                    //<< ", Actual ID: " << points[i].actual_point_id << ") : (" 
-                  //<< points[i].image_point(0) << ", "
-                  //<< points[i].image_point(1) << ") "
-                  << ", Appearance: [";
-        for (int j = 1; j < 12; j++) {
-            std::cout << points[i][j];
+        auto [x, y] = point_vec[i].image_point;
+
+        std::cout << "Point " << point_vec[i].local_id_and_appaerance[0] 
+                    << ", ( Actual ID: " << point_vec[i].actual_point_id << ") : (" 
+                    << x << ", "
+                    << y << ") "
+                    << ", Appearance: [";
+        for (int j = 1; j < 11; j++) {
+            std::cout << point_vec[i].local_id_and_appaerance[j];
             if (j < 10) std::cout << ", ";
         }
         std::cout << "]\n";
@@ -30,10 +38,14 @@ int main() {
     CameraParameters cam_params = read_camera_file(file_path_camera);
     std::cout << "Intrinsic Matrix (K):\n" << cam_params.K << "\n";
     std::cout << "Camera-to-Robot Transformation Matrix (T_cam_robot):\n" << cam_params.T_cam_robot << "\n";
+    std::cout << "z_near: " << cam_params.z_near << "\n";
+    std::cout << "z_far: " << cam_params.z_far << "\n";
+    std::cout << "width: " << cam_params.width << "\n";
+    std::cout << "height: " << cam_params.height << "\n";
 
     /********************************************************************/
 
-    std::cout << "\nTEST: PointCloud" << std::endl;
+    //std::cout << "\nTEST: PointCloud" << std::endl;
     //PointCloud point_cloud(points);
 
     //std::cout << "PointCloud contains " << point_cloud.size() << " points.\n";

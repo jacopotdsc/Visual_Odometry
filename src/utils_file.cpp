@@ -1,3 +1,4 @@
+#include "defs.h"
 #include "utils_file.h"
 
 // Auxiliar functions
@@ -28,9 +29,8 @@ std::string getOutputFileName(const std::string& file_path_1, const std::string&
 }
 
 // Utility for read from files
-ContainerType read_meas_file(const std::string& file_path) {
-    //std::vector<PointDataMeasurement> points;
-    ContainerType points;
+PointCloud read_meas_file(const std::string& file_path) {
+    PointCloud point_cloud; // ContainerType points;
     std::ifstream input_stream(file_path);
     std::string word;
     std::string line;
@@ -38,30 +38,30 @@ ContainerType read_meas_file(const std::string& file_path) {
 
     if (!input_stream.is_open()) {
         std::cerr << "Error opening file: " << file_path << std::endl;
-        return points;
+        return point_cloud; //return points;
     }
 
-    // SSkipp first 3 lines ( Metadata line ) 
+    // Skip first 3 lines ( Metadata line ) 
     for (int i = 0; i < 3; i++)
         std::getline(input_stream, line);
     
-    // Leggere i punti
     while (std::getline(input_stream, line)) {
         std::stringstream ss(line);
-        //PointDataMeasurement pointData;
+        Point point_structure;
         Vectorf<11> pointData;
         ss >> word; // point
 
         ss >> value; // POINT_ID_CURRENT_MESUREMENT
         pointData(0) = value;
 
-        ss >> word; // ACTUAL_POINT_ID
+        ss >> value; // ACTUAL_POINT_ID
+        point_structure.actual_point_id = static_cast<int>(value);
 
         // Take IMAGE_POINT
-        for (int i = 0; i < 2; i++) {
-            ss >> value;
-            //pointData.image_point(i) = value;
-        }
+        float x, y;
+        ss >> x >> y; //ss >> value;
+        point_structure.image_point = std::make_tuple(x, y);
+
 
         // Take APPEARANCE
         for (int i = 1; i < 11; i++) {
@@ -69,11 +69,14 @@ ContainerType read_meas_file(const std::string& file_path) {
             //pointData.appearance(i) = value;
             pointData(i) = value;
         }
+
+        point_structure.local_id_and_appaerance = pointData;
+        point_cloud.addPoint(point_structure);
         
-        points.push_back(pointData);
+        //points.push_back(pointData);
     }
     input_stream.close();
-    return points;
+    return point_cloud; // points;
 }
 
 CameraParameters read_camera_file(const std::string& file_path) {
@@ -101,6 +104,18 @@ CameraParameters read_camera_file(const std::string& file_path) {
             input_stream >> cam_params.T_cam_robot(i, j);
         }
     }
+
+    input_stream >> word; 
+    input_stream >> cam_params.z_near;
+
+    input_stream >> word;
+    input_stream >> cam_params.z_far;
+
+    input_stream >> word; 
+    input_stream >> cam_params.width;
+
+    input_stream >> word;
+    input_stream >> cam_params.height;
 
     input_stream.close();
     return cam_params;
@@ -158,6 +173,7 @@ CorresponcesPairVector compute_correspondences(const std::string& input_file, co
     return pairVector;
 }
 
+/*
 CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next ){
     
     // Initializing name of files
@@ -198,5 +214,5 @@ CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::
     // Clearing the output and return vector of correspondences
     return compute_correspondences(file_to_write, file_cleaned);
 }
-
+*/
 

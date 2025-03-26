@@ -1,20 +1,27 @@
 #pragma once
 #include <vector>
+#include <tuple> 
+#include "defs.h"
 #include "utils_file.h"
 
-/*
-class PointCloud {
+struct Point {
+    Vectorf<11> local_id_and_appaerance;
+    int actual_point_id;
+    std::tuple<float, float> image_point; 
+};
 
-    private:
-        std::vector<PointDataMeasurement> point_cloud_vector;
+class PointCloud {
+    
+    std::vector<Point> point_cloud_vector;
 
     public:
-        
-        PointCloud(const std::vector<PointDataMeasurement>& points) {
-            point_cloud_vector = points; 
+        PointCloud() = default;
+
+        void addPoint(const Point& point) {
+            point_cloud_vector.push_back(point);
         }
-        
-        const std::vector<PointDataMeasurement>& getPoints() const {
+
+        const std::vector<Point>& getPoints() const {
             return point_cloud_vector;
         }
 
@@ -22,4 +29,3 @@ class PointCloud {
             return point_cloud_vector.size();
         }
 };
-*/
