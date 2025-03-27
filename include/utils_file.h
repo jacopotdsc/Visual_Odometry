@@ -14,5 +14,5 @@ struct CameraParameters {
 PointCloud read_meas_file(const std::string& file_path);
 CameraParameters read_camera_file(const std::string& file_path);
 
-//CorresponcesPairVector compute_correspondences(const std::string& input_file, const std::string& output_file);
-//CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next );
+CorresponcesPairVector compute_correspondences(const std::string& input_file, const std::string& output_file);
+CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next );

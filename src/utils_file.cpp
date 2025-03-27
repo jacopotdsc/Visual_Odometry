@@ -173,7 +173,6 @@ CorresponcesPairVector compute_correspondences(const std::string& input_file, co
     return pairVector;
 }
 
-/*
 CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next ){
     
     // Initializing name of files
@@ -181,8 +180,8 @@ CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::
     std::string file_cleaned = file_to_write.substr( 0, file_to_write.rfind(".txt")) + "_cleaned.txt";  
 
     // Reading measurement files
-    std::vector<Vectorf<11>> meas_prev = read_meas_file(file_meas_prev);
-    std::vector<Vectorf<11>> meas_next  = read_meas_file(file_meas_next);
+    std::vector<Vectorf<11>> meas_prev = read_meas_file(file_meas_prev).extractLocalIdAndAppearance();
+    std::vector<Vectorf<11>> meas_next = read_meas_file(file_meas_next).extractLocalIdAndAppearance();
 
     // opening file to write
     std::ofstream output(file_to_write, std::ios::out);
@@ -214,5 +213,5 @@ CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::
     // Clearing the output and return vector of correspondences
     return compute_correspondences(file_to_write, file_cleaned);
 }
-*/
+
 

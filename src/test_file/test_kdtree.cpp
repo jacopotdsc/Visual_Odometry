@@ -6,8 +6,8 @@ int main(int argc, char** argv) {
     string file_path_1 = "../data/meas-00006.dat";
     string file_path_2 = "../data/meas-00007.dat";
 
-    std::vector<Vectorf<11>> points1 = read_meas_file(file_path_1);
-    std::vector<Vectorf<11>> points2 = read_meas_file(file_path_2);
+    std::vector<Vectorf<11>> points1 = read_meas_file(file_path_1).extractLocalIdAndAppearance(); //read_meas_file(file_path_1);
+    std::vector<Vectorf<11>> points2 = read_meas_file(file_path_2).extractLocalIdAndAppearance(); //read_meas_file(file_path_2);
 
     cout << "Loaded " << points1.size() << " points for cloud1." << endl;
     cout << "Loaded " << points2.size() << " points for cloud2." << endl;

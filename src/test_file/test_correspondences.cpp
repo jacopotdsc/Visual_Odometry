@@ -1,7 +1,4 @@
-//#include "defs.h"
-//#include "kdtree/eigen_kdtree.h"
 #include "utils_file.h"
-//#include <regex>
 
 using namespace std;
 using TreeNodeType = TreeNode_<ContainerType::iterator>;
