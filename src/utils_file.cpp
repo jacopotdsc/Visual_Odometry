@@ -1,15 +1,29 @@
 #include "defs.h"
 #include "utils_file.h"
 
-// Auxiliar functions
+/***********************************************************/
+// A couples of auxiliar functions usefull for other ones
+
+/**
+ * @param values Vector of floats
+ * @return Bool values, True is numbers are all equals
+ */
 bool all_same_values(const std::vector<float>& values) {
     return std::all_of(values.begin() + 1, values.end(), [&](float v) { return v == values[1]; });
 }
   
+/**
+ * @param v1, v2 Vector of floats 
+ * @return Bool values, True is vectors are all equals
+ */
 bool are_identical(const std::vector<float>& v1, const std::vector<float>& v2) {
     return std::equal(v1.begin()+1, v1.end(), v2.begin()+1);
 }
 
+/**
+ * @param file_path_1, file_path_2 Path of meas-xxxxx.dat file 
+ * @return A string to have a file.txt name in function of meas-xxxxx.dat files
+ */
 std::string getOutputFileName(const std::string& file_path_1, const std::string& file_path_2) {
     // Estrai i numeri dai percorsi dei file
     std::regex rgx("meas-(\\d+).dat");
@@ -27,6 +41,8 @@ std::string getOutputFileName(const std::string& file_path_1, const std::string&
         return "invalid_file_name";
     }
 }
+
+/**********************************************************/
 
 // Utility for read from files
 PointCloud read_meas_file(const std::string& file_path) {
@@ -142,6 +158,7 @@ CorresponcesPairVector compute_correspondences(const std::string& input_file, co
       if (!getline(input, line2)) { break; }
       if (!getline(input, line_dummy)) {}
   
+      // Composing vector of correspondences
       std::stringstream ss1(line1), ss2(line2);
       std::vector<float> values1, values2;
       float value;
@@ -149,6 +166,7 @@ CorresponcesPairVector compute_correspondences(const std::string& input_file, co
       while (ss1 >> value) { values1.push_back(value);}
       while (ss2 >> value) { values2.push_back(value); }
   
+      // If error, skip
       if (all_same_values(values1) || all_same_values(values2)) { continue; }
   
       if (are_identical(values1, values2)) {
