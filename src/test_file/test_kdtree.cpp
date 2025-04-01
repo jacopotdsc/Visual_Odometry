@@ -6,8 +6,8 @@ int main(int argc, char** argv) {
     string file_path_1 = "../data/meas-00006.dat";
     string file_path_2 = "../data/meas-00007.dat";
 
-    std::vector<Vectorf<11>> points1 = read_meas_file(file_path_1).extractLocalIdAndAppearance(); //read_meas_file(file_path_1);
-    std::vector<Vectorf<11>> points2 = read_meas_file(file_path_2).extractLocalIdAndAppearance(); //read_meas_file(file_path_2);
+    Vector11fVector points1 = read_meas_file(file_path_1).extractLocalIdAndAppearance(); //read_meas_file(file_path_1);
+    Vector11fVector points2 = read_meas_file(file_path_2).extractLocalIdAndAppearance(); //read_meas_file(file_path_2);
 
     cout << "Loaded " << points1.size() << " points for cloud1." << endl;
     cout << "Loaded " << points2.size() << " points for cloud2." << endl;
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     }
 
     for (const auto& query_point : points2) {
-      Vectorf<11>* nearest_neighbor = kd_tree.fullSearchCustom_v2(query_point, 1.0f);
+      Vector11f* nearest_neighbor = kd_tree.fullSearchCustom_v2(query_point, 1.0f);
     
       if (nearest_neighbor != nullptr) {
           for (int i = 0; i < 11; ++i) {
@@ -45,5 +45,5 @@ int main(int argc, char** argv) {
     string output_file = "output_pairs_cleaned.txt";  
 
     // Call the function to edit the file
-    auto c_vector = compute_correspondences(input_file, output_file);
+    //auto c_vector = compute_correspondences(input_file, output_file);
 }

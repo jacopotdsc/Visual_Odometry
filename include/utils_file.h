@@ -1,7 +1,9 @@
 #pragma once
 #include "defs.h"
 #include "PointCloud.h"
+#include "camera.h"
 
+/*
 // Structure which contain all information contained in camera.dat file
 struct CameraParameters {
     Eigen::Matrix3f K;  // Intrinsic Matrix
@@ -10,7 +12,7 @@ struct CameraParameters {
     int z_far;
     int width;
     int height;
-};
+};*/
 
 /**
  * @param file_path Path to a meas-xxxxx.dat file
@@ -20,9 +22,9 @@ PointCloud read_meas_file(const std::string& file_path);
 
 /**
  * @param file_path Path to a camera.dat file
- * @return CameraParameters class, it manage the camera.dat informations
+ * @return Camera class, it manage the camera.dat informations
 */
-CameraParameters read_camera_file(const std::string& file_path);
+Camera read_camera_file(const std::string& file_path);
 
 /**
  * @param input_file File where correspondences find by kd-tree are written

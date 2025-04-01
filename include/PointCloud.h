@@ -6,7 +6,7 @@
 
 // Structure which represented the single line of meas-xxxxx.dat file
 struct Point {
-    Vectorf<11> local_id_and_appaerance; // vector composed by POINT_ID_CURRENT_MESUREMENT + APPEARANCE
+    Vector11f local_id_and_appaerance; // vector composed by POINT_ID_CURRENT_MESUREMENT + APPEARANCE
     int actual_point_id; // ACTUAL_POINT_ID
     std::tuple<float, float> image_point; //IMAGE_POINT, position on the image
     std::tuple<float, float> normalized_image_point; // normalized IMAGE_POINT, used for 8-points algorithm
@@ -49,8 +49,8 @@ class PointCloud {
          * @brief Useful function to return a vector of local_id_and_appaerance
          *        to used kd-tree in an easier way
          */
-        std::vector<Vectorf<11>> extractLocalIdAndAppearance() const {
-            std::vector<Vectorf<11>> result;
+        Vector11fVector extractLocalIdAndAppearance() const {
+            Vector11fVector result;
             for (const auto& point : point_cloud_vector) {
                 result.push_back(point.local_id_and_appaerance);
             }

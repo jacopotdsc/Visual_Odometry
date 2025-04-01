@@ -1,6 +1,7 @@
 #include <iostream>
 #include "utils_file.h"
 #include "PointCloud.h"
+#include "camera.h"
 
 int main() {
     std::cout << "TEST: read_meas_file" << std::endl;
@@ -35,13 +36,13 @@ int main() {
     
     std::cout << "\nTEST: read_camera_file" << std::endl;
     std::string file_path_camera = "../data/camera.dat";
-    CameraParameters cam_params = read_camera_file(file_path_camera);
-    std::cout << "Intrinsic Matrix (K):\n" << cam_params.K << "\n";
-    std::cout << "Camera-to-Robot Transformation Matrix (T_cam_robot):\n" << cam_params.T_cam_robot << "\n";
-    std::cout << "z_near: " << cam_params.z_near << "\n";
-    std::cout << "z_far: " << cam_params.z_far << "\n";
-    std::cout << "width: " << cam_params.width << "\n";
-    std::cout << "height: " << cam_params.height << "\n";
+    Camera cam_params = read_camera_file(file_path_camera);
+    std::cout << "Intrinsic Matrix (K):\n" << cam_params._camera_matrix << "\n";
+    //std::cout << "Camera-to-Robot Transformation Matrix (T_cam_robot):\n" << cam_params.T_cam_robot << "\n";
+    std::cout << "z_near: " << cam_params._z_near << "\n";
+    std::cout << "z_far: " << cam_params._z_far << "\n";
+    std::cout << "width: " << cam_params._cols << "\n";
+    std::cout << "height: " << cam_params._rows << "\n";
 
     /********************************************************************/
 
