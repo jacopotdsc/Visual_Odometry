@@ -1,19 +1,21 @@
 #pragma once
-#include <Eigen/Core>
-#include <Eigen/StdVector>
-#include <vector>
-#include <iostream>
-#include <fstream>
+#include "defs.h"
+//#include <Eigen/Core>
+//#include <Eigen/StdVector>
+//#include <vector>
+//#include <iostream>
+//#include <fstream>
 
-using Vector3f = Eigen::Matrix<float, 3,1>;
-using Vector2f = Eigen::Matrix<float, 3,1>;
+
+//using Vector3f = Eigen::Matrix<float, 3,1>;
+//using Vector2f = Eigen::Matrix<float, 3,1>;
 
 // we define a std vector of 3d points, the allocator helps
 // the optimizer for aligned accesses. Required with -O3 (otherwise the program crashes)
-using Vector3fVector=std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >;
+//using Vector3fVector=std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >;
 
 // we define a std vector of 2d points
-using Vector2fVector=std::vector<Vector2f, Eigen::aligned_allocator<Vector2f> >;
+//using Vector2fVector=std::vector<Vector2f, Eigen::aligned_allocator<Vector2f> >;
 
 // we write a generic point loader
 // template magic.

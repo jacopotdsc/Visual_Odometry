@@ -14,7 +14,7 @@ Vector3fVector generateRandomWorldPoints(int num_points) {
 
     Vector3fVector world_points;
     for (int i = 0; i < num_points; ++i) {
-        Vector3f point(dis(gen), dis(gen), dis(gen));  
+        Eigen::Vector3f point(dis(gen), dis(gen), dis(gen));  
         world_points.push_back(point);
     }
     return world_points;
@@ -28,9 +28,12 @@ int main(int argc, char** argv) {
 
     int num_points = 100;
     Vector3fVector world_points = generateRandomWorldPoints(num_points);
+    for (size_t i = 0; i < 5; i++) {
+        std::cout << "WorldPoint " << i << ": " << world_points[i].transpose() << std::endl;
+    }
 
     Vector2fVector image_points;
-    int num_points_inside = camera_params.projectPoints(image_points, world_points, true);
+    int num_points_inside = camera_params.projectPoints(image_points, world_points, false);
 
     std::cout << "Number of points inside the image: " << num_points_inside << std::endl;
 

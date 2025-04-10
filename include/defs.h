@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <tuple> 
 #include <utility>
 #include <regex>
 #include <unistd.h>
@@ -17,7 +18,7 @@
 #include "kdtree/eigen_kdtree.h"
 
 typedef Eigen::Matrix<float, 11, 1> Vector11f;
-typedef std::vector<Vector11f > Vector11fVector;
+typedef std::vector<Vector11f, Eigen::aligned_allocator<Vector11f>> Vector11fVector;
 
 // Definitions for kd-tree
 using ContainerType = Vector11fVector; //std::vector<Vectorf<11>>; 
@@ -25,7 +26,29 @@ using TreeNodeType = TreeNode_<ContainerType::iterator>;
 
 // Definition for correspondences
 using PairType = Vector11f; //Vectorf<11>;
-using CorresponcesPairVector = std::vector< std::pair< PairType, PairType > >;
+using CorresponcesPairVector = std::vector< std::pair< PairType, PairType >, Eigen::aligned_allocator<PairType> >;
+
+typedef std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f> > Vector4fVector;
+typedef std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > Vector3fVector;
+typedef std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f> > Vector2fVector;
+typedef std::vector<Eigen::Vector2i, Eigen::aligned_allocator<Eigen::Vector2i> > Vector2iVector;
+typedef std::vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f> > Matrix3fVector;
+typedef std::vector<Eigen::Matrix2f, Eigen::aligned_allocator<Eigen::Matrix2f> > Matrix2fVector;
+
+typedef Eigen::Matrix<float, 2, 3> Matrix2_3f;
+typedef Eigen::Matrix<float, 4, 6> Matrix4_6f;
+typedef Eigen::Matrix<float, 2, 6> Matrix2_6f;
+typedef Eigen::Matrix<float, 3, 6> Matrix3_6f;
+
+typedef Eigen::Matrix<float, 6, 6> Matrix6f;
+typedef Eigen::Matrix<float, 6, 1> Vector6f;
+
+typedef Eigen::Matrix<float, 9, 6> Matrix9_6f;
+typedef Eigen::Matrix<float, 9, 9> Matrix9f;
+typedef Eigen::Matrix<float, 9, 1> Vector9f;
+
+typedef Eigen::Matrix<float, 6, 3> Matrix6_3f;
+typedef Eigen::Matrix<float, 4, 3> Matrix4_3f;
 
 namespace pr {
 
@@ -37,31 +60,6 @@ namespace pr {
   #define OPENCV_KEY_SPACE 32
   #define OPENCV_KEY_DELETE 3014656
   #define OPENCV_KEY_ESCAPE 27
-
-  typedef std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f> > Vector4fVector;
-  typedef std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > Vector3fVector;
-  typedef std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f> > Vector2fVector;
-  typedef std::vector<Eigen::Vector2i, Eigen::aligned_allocator<Eigen::Vector2i> > Vector2iVector;
-  typedef std::vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f> > Matrix3fVector;
-  typedef std::vector<Eigen::Matrix2f, Eigen::aligned_allocator<Eigen::Matrix2f> > Matrix2fVector;
-
-
-  typedef Eigen::Matrix<float, 2, 3> Matrix2_3f;
-  typedef Eigen::Matrix<float, 4, 6> Matrix4_6f;
-  typedef Eigen::Matrix<float, 2, 6> Matrix2_6f;
-  typedef Eigen::Matrix<float, 3, 6> Matrix3_6f;
-
-  typedef Eigen::Matrix<float, 6, 6> Matrix6f;
-  typedef Eigen::Matrix<float, 6, 1> Vector6f;
-
-  typedef Eigen::Matrix<float, 9, 6> Matrix9_6f;
-  typedef Eigen::Matrix<float, 9, 9> Matrix9f;
-  typedef Eigen::Matrix<float, 9, 1> Vector9f;
-
-  typedef Eigen::Matrix<float, 6, 3> Matrix6_3f;
-  typedef Eigen::Matrix<float, 4, 3> Matrix4_3f;
-
-
 
   template <class T> 
   bool isNan(const T& m){

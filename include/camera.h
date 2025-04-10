@@ -29,6 +29,8 @@ class Camera{
         return false;
       Eigen::Vector3f projected_point=_camera_matrix*camera_point;
       image_point=projected_point.head<2>()*(1./projected_point.z());
+      //std::cout << "check point: " << image_point.transpose() << std::endl;
+    
       if(image_point.x()<0 || image_point.x()>_cols-1)
         return false;
       if(image_point.y()<0 || image_point.y()>_rows-1)
