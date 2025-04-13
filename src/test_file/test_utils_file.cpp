@@ -46,9 +46,11 @@ int main() {
 
     /********************************************************************/
 
-    //std::cout << "\nTEST: PointCloud" << std::endl;
-    //PointCloud point_cloud(points);
+    std::cout << "\nTEST: read_trajectory_file" << std::endl;
+    std::string file_path_trajectory = "../data/trajectory.dat";
+    Vector7fVector trajectory_vector = read_trajectory_file(file_path_trajectory);
 
-    //std::cout << "PointCloud contains " << point_cloud.size() << " points.\n";
-
+    for(int i=15; i<20; i++){
+        std::cout << "Trajectory vector: " << trajectory_vector[i].transpose() << " \n";
+    }
 }

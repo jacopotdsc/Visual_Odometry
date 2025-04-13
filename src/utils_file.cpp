@@ -173,3 +173,33 @@ std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::st
 }
 
 
+Vector7fVector read_trajectory_file(const std::string& file_path) {
+    Vector7fVector trajectory_vector; ;
+    std::ifstream input_stream(file_path);
+    std::string word;
+    std::string line;
+    float value;
+
+    if (!input_stream.is_open()) {
+        std::cerr << "Error opening file: " << file_path << std::endl;
+        return trajectory_vector; 
+    }
+
+    while (std::getline(input_stream, line)) {
+
+        if(line.empty())
+            continue;
+        std::stringstream ss(line);
+        Vector7f trajectory_point;
+
+        for (int i = 0; i < 7; i++) {
+            ss >> value;
+            trajectory_point(i) = value;
+        }
+
+        trajectory_vector.push_back(trajectory_point);
+        
+    }
+    input_stream.close();
+    return trajectory_vector; 
+}

@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <tuple> 
+#include <cmath>
 #include <random>
 #include <utility>
 #include <regex>
@@ -32,6 +33,9 @@ using TreeNodeType = TreeNode_<ContainerType::iterator>;
 // Definition for correspondences
 using PairType = Vector11f; //Vectorf<11>;
 using CorresponcesPairVector = std::vector< std::pair< PairType, PairType >, Eigen::aligned_allocator<PairType> >;
+
+typedef Eigen::Matrix<float, 7, 1> Vector7f;
+typedef std::vector<Vector7f, Eigen::aligned_allocator<Vector7f> > Vector7fVector;
 
 typedef std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f> > Vector4fVector;
 typedef std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > Vector3fVector;

@@ -29,3 +29,5 @@ IntPairVector compute_correspondences(const std::string& input_file, const std::
  * @return A vector which contain std::tuple<.,.> representing the correspondences
 */
 std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::string file_meas_prev, std::string file_meas_next );
+
+Vector7fVector read_trajectory_file(const std::string& file_path);

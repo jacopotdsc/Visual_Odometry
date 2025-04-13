@@ -46,22 +46,21 @@ int main(int argc, char** argv) {
         cam.setWorldInCameraPose(motion*cam.worldInCameraPose());
 
         Vector2fVector current_image_points;
-        const bool keep_indices=true;
+        const bool keep_indices=false;
         
         cam.projectPoints(current_image_points, world_points, keep_indices);
     
         IntPairVector correspondences;
         computeFakeCorrespondences(correspondences, reference_image_points, current_image_points);
         
-        
         solver.init(cam,world_points,reference_image_points);
         solver.oneRound(correspondences,false);
         cam=solver.camera();
 
+        //std::cerr << "Point into the image " << reference_image_points.size() << " points" << std::endl;
         std::cout << "Iteration " << i << std::endl;
         std::cout << "Rotation:\n" << cam.worldInCameraPose().rotation() << std::endl;
         std::cout << "Translation:\n" << cam.worldInCameraPose().translation().transpose() << std::endl;
     }
-
 
 }   
