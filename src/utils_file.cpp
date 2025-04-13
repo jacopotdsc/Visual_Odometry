@@ -125,7 +125,7 @@ Camera read_camera_file(const std::string& file_path) {
     return cam_params;
 }
 
-CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next ){
+std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::string file_meas_prev, std::string file_meas_next ){
     
     // Initializing name of files
     std::string file_to_write  = getOutputFileName(file_meas_prev, file_meas_next);
@@ -134,6 +134,7 @@ CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::
     Vector11fVector meas_prev = read_meas_file(file_meas_prev).extractLocalIdAndAppearance();
     Vector11fVector meas_next = read_meas_file(file_meas_next).extractLocalIdAndAppearance();
     CorresponcesPairVector correspondences;
+    IntPairVector int_correspondences;
 
     // opening file to write
     std::ofstream output(file_to_write, std::ios::out);
@@ -158,17 +159,17 @@ CorresponcesPairVector perform_correspondences(std::string file_meas_prev, std::
             }
             output << std::endl << std::endl;  
             
-            PairType prev_point(*nearest_neighbor);
-            PairType next_point(query_point);
+            Vector11f prev_point(*nearest_neighbor);
+            Vector11f next_point(query_point);
             correspondences.push_back(std::make_pair(prev_point, next_point));
-        
-
+            int_correspondences.push_back(std::make_pair(prev_point[0], next_point[0]));
+    
         } else {
             //cout << "Nothing found for this query." << endl;
         }
     }
 
-    return correspondences;
+    return std::make_pair(correspondences, int_correspondences);
 }
 
 

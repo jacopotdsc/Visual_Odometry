@@ -35,6 +35,7 @@ int Camera::projectPoints(Vector2fVector& image_points,
     }
     if (keep_indices||is_inside){
       num_image_points++;
+      image_points[num_points_inside - 1] = image_point;
     } 
   }
   image_points.resize(num_image_points);

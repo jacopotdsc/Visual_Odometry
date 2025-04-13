@@ -10,7 +10,7 @@
 Vector3fVector generateRandomWorldPoints(int num_points) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-10.0, 10.0);  // Intervallo [-10, 10] per i punti nel mondo
+    std::uniform_real_distribution<> dis(-1.0, 1.0);  
 
     Vector3fVector world_points;
     for (int i = 0; i < num_points; ++i) {
@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 
     std::cout << "Number of points inside the image: " << num_points_inside << std::endl;
 
-    for (size_t i = 0; i < image_points.size(); i++) {
+    for (size_t i = 0; i < 5; i++) {
         std::cout << "Image Point " << i << ": " << image_points[i].transpose() << std::endl;
     }
 

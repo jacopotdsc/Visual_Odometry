@@ -26,18 +26,47 @@ Eigen::Matrix3f eight_point_algorithm(Camera& camera_params, PointCloud& point_c
  */
 Eigen::Matrix3f compute_essential_matrix(Camera& camera_params, Eigen::Matrix3f F);
 
+/**
+ * @param E computed essential matrix
+ * @return translation vector and 2 rotation matrix, to be choosen
+ */
 std::tuple<Eigen::Matrix3f, Eigen::Matrix3f, Eigen::Vector3f> compute_rotation_translation(const Eigen::Matrix3f& E);
 
+/**
+ * @brief Computed triangulation of one point solving a system. Called by triangulate_points
+ * @param d1, d2 normalized position in the image of a correspondence pair from two different point cloud
+ * @param t translation vector
+ * @param p filled paramter if triangulation is succefull
+ * @return true if triangulation is successfull.
+ */
 bool triangulate_point(
     const Eigen::Vector3f& d1, const Eigen::Vector3f& d2, 
     const Eigen::Vector3f& t, Eigen::Vector3f& p);
 
+/**
+ * @brief Implement the pipelin to triangulate a whole point cloud. Call triangulate_point
+ * @param K intrinsic parameter f camera
+ * @param X computed isometry
+ * @param correspondences contain pair of correspondences
+ * @param p1, p2 point cloud
+ * @param triangulated_point vector with triangulated points
+ * @return number of successfully triangulated point
+ */
 int triangulate_points( const Eigen::Matrix3f& K, const Eigen::Isometry3f& X, 
                         const CorresponcesPairVector& correspondences, 
                         PointCloud& p1, 
                         PointCloud& p2, 
                         std::vector<Eigen::Vector3f>& triangulated_points);
 
+/**
+ * @brief Implement the pipeline to estimate a 3D transformation. Call triangulate_points
+ * @param K intrinsic parameter f camera
+ * @param X computed isometry
+ * @param correspondences contain pair of correspondences
+ * @param p1, p2 point cloud
+ * @param R1, R2, t elemnt of isometry to be evaluated
+ * @return number a 3D isometry
+ */
 Eigen::Isometry3f estimate_transform(
                             const Eigen::Matrix3f& K, 
                             const CorresponcesPairVector& correspondences, 

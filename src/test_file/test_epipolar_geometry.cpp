@@ -37,7 +37,9 @@ int main(int argc, char** argv) {
     PointCloud point_cloud_1 = read_meas_file(file_path_meas_1);
     PointCloud point_cloud_2 = read_meas_file(file_path_meas_2);
 
-    CorresponcesPairVector correspondence_vector = perform_correspondences(file_path_meas_1, file_path_meas_2);
+    auto correspondence_tuple = perform_correspondences(file_path_meas_1, file_path_meas_2);
+    CorresponcesPairVector correspondence_vector = correspondence_tuple.first;
+    
     Eigen::Matrix3f F = eight_point_algorithm(camera_params, point_cloud_1, point_cloud_2, correspondence_vector);
     Eigen::Matrix3f E = compute_essential_matrix(camera_params, F);
 

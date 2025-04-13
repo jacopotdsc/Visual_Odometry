@@ -25,18 +25,16 @@ class Camera{
     inline  bool projectPoint(Eigen::Vector2f& image_point,
                               const Eigen::Vector3f& world_point){
       Eigen::Vector3f camera_point=_world_in_camera_pose*world_point;
-      if (camera_point.z()>_z_far || camera_point.z()<_z_near)
+      if (camera_point.z()<=0)
         return false;
       Eigen::Vector3f projected_point=_camera_matrix*camera_point;
       image_point=projected_point.head<2>()*(1./projected_point.z());
-      //std::cout << "check point: " << image_point.transpose() << std::endl;
-    
       if(image_point.x()<0 || image_point.x()>_cols-1)
         return false;
       if(image_point.y()<0 || image_point.y()>_rows-1)
         return false;
       return true;
-    }
+}
 
     //! projects a bunch of world points on the image
     //! @param image_points: the points on the image
@@ -48,11 +46,11 @@ class Camera{
                       const Vector3fVector& world_points,
                       bool keep_indices=false);
 
-    //inline const Eigen::Isometry3f& worldInCameraPose() const {return _world_in_camera_pose;}
-    //inline void setWorldInCameraPose(const Eigen::Isometry3f& pose)  {_world_in_camera_pose=pose;}
-    //inline const Eigen::Matrix3f& cameraMatrix() const {return _camera_matrix;}
-    //inline const int rows() const {return _rows;}
-    //inline const int cols() const {return _cols;}
+    inline const Eigen::Isometry3f& worldInCameraPose() const {return _world_in_camera_pose;}
+    inline void setWorldInCameraPose(const Eigen::Isometry3f& pose)  {_world_in_camera_pose=pose;}
+    inline const Eigen::Matrix3f& cameraMatrix() const {return _camera_matrix;}
+    inline const int rows() const {return _rows;}
+    inline const int cols() const {return _cols;}
 
     
   public:
