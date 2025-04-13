@@ -127,7 +127,7 @@ int triangulate_points( const Eigen::Matrix3f& K, const Eigen::Isometry3f& X,
                         const CorresponcesPairVector& correspondences, 
                         PointCloud& p1, 
                         PointCloud& p2, 
-                        std::vector<Eigen::Vector3f>& triangulated_points) {
+                        Vector3fVector& triangulated_points) {
 
     Eigen::Vector3f t = X.inverse().translation();
 
@@ -171,7 +171,7 @@ Eigen::Isometry3f estimate_transform(const Eigen::Matrix3f& K,
     X2.linear() = R2;
     X2.translation() = t;
 
-    std::vector<Eigen::Vector3f> triangulated_points_1, triangulated_points_2;
+    Vector3fVector triangulated_points_1, triangulated_points_2;
     int n_success_1 = triangulate_points(K, X1, correspondences, p1, p2, triangulated_points_1);
     int n_success_2 = triangulate_points(K, X2, correspondences, p1, p2, triangulated_points_2);
 

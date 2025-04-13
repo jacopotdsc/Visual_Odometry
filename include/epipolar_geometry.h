@@ -56,7 +56,7 @@ int triangulate_points( const Eigen::Matrix3f& K, const Eigen::Isometry3f& X,
                         const CorresponcesPairVector& correspondences, 
                         PointCloud& p1, 
                         PointCloud& p2, 
-                        std::vector<Eigen::Vector3f>& triangulated_points);
+                        Vector3fVector& triangulated_points);
 
 /**
  * @brief Implement the pipeline to estimate a 3D transformation. Call triangulate_points

@@ -3,7 +3,7 @@
 
 int main() {
     const int num_points = 100;
-    Vector2fVector gt_points, estimated_points;
+    Vector3fVector gt_points, estimated_points;
 
     std::default_random_engine gen;
     std::normal_distribution<float> noise(0.0f, 0.07f); 
@@ -12,13 +12,14 @@ int main() {
         float t = i * 0.1f; 
         float x = std::sin(t);  
         float y = t;
+        float z = std::cos(t);
 
-        Eigen::Vector2f gt(x, y);
-        Eigen::Vector2f est(x + noise(gen), y + noise(gen));
+        Eigen::Vector3f gt(x, y, z);
+        Eigen::Vector3f est(x + noise(gen), y + noise(gen), z + noise(gen));
 
         gt_points.push_back(gt);
         estimated_points.push_back(est);
     }
 
-    write_trajecoty_on_file(gt_points, estimated_points);
+    write_trajectory_on_file(gt_points, estimated_points);
 }

@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         cam.setWorldInCameraPose(motion*cam.worldInCameraPose());
 
         Vector2fVector current_image_points;
-        const bool keep_indices=false;
+        const bool keep_indices=true;
         
         cam.projectPoints(current_image_points, world_points, keep_indices);
     

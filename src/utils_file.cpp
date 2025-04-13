@@ -172,7 +172,6 @@ std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::st
     return std::make_pair(correspondences, int_correspondences);
 }
 
-
 Vector7fVector read_trajectory_file(const std::string& file_path) {
     Vector7fVector trajectory_vector; ;
     std::ifstream input_stream(file_path);

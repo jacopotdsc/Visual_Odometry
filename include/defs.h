@@ -44,6 +44,8 @@ typedef std::vector<Eigen::Vector2i, Eigen::aligned_allocator<Eigen::Vector2i> >
 typedef std::vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f> > Matrix3fVector;
 typedef std::vector<Eigen::Matrix2f, Eigen::aligned_allocator<Eigen::Matrix2f> > Matrix2fVector;
 
+typedef std::vector<Eigen::Isometry3f, Eigen::aligned_allocator<Eigen::Isometry3f> > IsometryVector;
+
 typedef Eigen::Matrix<float, 2, 3> Matrix2_3f;
 typedef Eigen::Matrix<float, 4, 6> Matrix4_6f;
 typedef Eigen::Matrix<float, 2, 6> Matrix2_6f;

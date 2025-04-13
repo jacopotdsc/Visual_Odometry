@@ -30,4 +30,8 @@ IntPairVector compute_correspondences(const std::string& input_file, const std::
 */
 std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::string file_meas_prev, std::string file_meas_next );
 
+/**
+ * @param file_path Path to a trajectory.dat file
+ * @return Vector containing information of trajectory.dat
+*/
 Vector7fVector read_trajectory_file(const std::string& file_path);

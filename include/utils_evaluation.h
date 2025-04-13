@@ -1,3 +1,3 @@
 #include "defs.h"
 
-void write_trajecoty_on_file(Vector2fVector gt_points, Vector2fVector estimated_points);
+void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points);
