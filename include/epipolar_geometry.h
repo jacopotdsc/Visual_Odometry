@@ -39,9 +39,9 @@ std::tuple<Eigen::Matrix3f, Eigen::Matrix3f, Eigen::Vector3f> compute_rotation_t
  * @param p filled paramter if triangulation is succefull
  * @return true if triangulation is successfull.
  */
-bool triangulate_point(
-    const Eigen::Vector3f& d1, const Eigen::Vector3f& d2, 
-    const Eigen::Vector3f& t, Eigen::Vector3f& p);
+//bool triangulate_point(
+//    const Eigen::Vector3f& d1, const Eigen::Vector3f& d2, 
+//    const Eigen::Vector3f& t, Eigen::Vector3f& p);
 
 /**
  * @brief Implement the pipelin to triangulate a whole point cloud. Call triangulate_point
@@ -52,11 +52,11 @@ bool triangulate_point(
  * @param triangulated_point vector with triangulated points
  * @return number of successfully triangulated point
  */
-int triangulate_points( const Eigen::Matrix3f& K, const Eigen::Isometry3f& X, 
-                        const CorresponcesPairVector& correspondences, 
-                        PointCloud& p1, 
-                        PointCloud& p2, 
-                        Vector3fVector& triangulated_points);
+//int triangulate_points( const Eigen::Matrix3f& K, const Eigen::Isometry3f& X, 
+//                        const CorresponcesPairVector& correspondences, 
+//                        PointCloud& p1, 
+//                        PointCloud& p2, 
+//                        Vector3fVector& triangulated_points);
 
 /**
  * @brief Implement the pipeline to estimate a 3D transformation. Call triangulate_points
@@ -67,9 +67,28 @@ int triangulate_points( const Eigen::Matrix3f& K, const Eigen::Isometry3f& X,
  * @param R1, R2, t elemnt of isometry to be evaluated
  * @return number a 3D isometry
  */
-Eigen::Isometry3f estimate_transform(
-                            const Eigen::Matrix3f& K, 
-                            const CorresponcesPairVector& correspondences, 
-                            PointCloud& p1, 
-                            PointCloud& p2,
-                            const Eigen::Matrix3f& R1, const Eigen::Matrix3f& R2, const Eigen::Vector3f& t);
+//Eigen::Isometry3f estimate_transform(
+//                            const Eigen::Matrix3f& K, 
+//                            const CorresponcesPairVector& correspondences, 
+//                            PointCloud& p1, 
+//                            PointCloud& p2,
+//                            const Eigen::Matrix3f& R1, const Eigen::Matrix3f& R2, const Eigen::Vector3f& t);
+
+
+//////////////////////////////////////////////////77
+bool triangulate_point(const Eigen::Vector3f& d1,const Eigen::Vector3f& d2,const Eigen::Vector3f& p2,Eigen::Vector3f& p);
+
+int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X, const IntPairVector& correspondences,
+                        const Vector2fVector& p1_img, const Vector2fVector& p2_img, Vector3fVector& triangulated);
+
+
+                        int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X, const IntPairVector& correspondences,
+                            const Vector2fVector& p1_img, const Vector2fVector& p2_img, Vector3fVector& triangulated, IntPairVector& correspondences_new);
+
+Vector2fVector normalize(const Vector2fVector& p,Eigen::Matrix3f& T);
+
+const Eigen::Matrix3f estimate_fundamental(const IntPairVector& correspondences, 
+    const Vector2fVector& p1_img, const Vector2fVector& p2_img);
+
+const Eigen::Isometry3f estimate_transform(const Eigen::Matrix3f k, const IntPairVector& correspondences, 
+    const Vector2fVector& p1_img, const Vector2fVector& p2_img);

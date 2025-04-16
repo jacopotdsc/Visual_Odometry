@@ -3,49 +3,63 @@
 #include "epipolar_geometry.h"
 #include "picp_solver.h"
 #include "utils_evaluation.h"
+#include "utils_world.h"
 
 #define TOTAL_MEAS 120
 
-int main (int argc, char** argv) {
+IntPairVector extract_correspondences_world(const IntPairVector& correspondences_imgs,const IntPairVector& correspondences_world){
+    IntPairVector correspondences; correspondences.reserve(correspondences_imgs.size());
 
-    // Reading camera parameters an first measurement
+    for(size_t i=0;i<correspondences_imgs.size();i++){
+        const int idx_ref=correspondences_imgs[i].first;
+        for(size_t j=0;j<correspondences_world.size();j++){
+            if(correspondences_world[j].first==idx_ref){
+                correspondences.push_back(IntPair(correspondences_imgs[i].second,correspondences_world[j].second));
+                break;
+            }
+        }
+    }
+    return correspondences;
+
+}
+
+
+int main (int argc, char** argv) {
+    
+    // --------------------- CAMERA ---------------------
     std::string file_path_camera = "../data/camera.dat";
     Camera cam = read_camera_file(file_path_camera);
+    Eigen::Matrix3f K = cam.cameraMatrix();
 
-    // Reading first two frames
+    // --------------------- MEASUREMENTS ---------------------
     std::string file_path_meas_0 = "../data/meas-00000.dat";
     std::string file_path_meas_1 = "../data/meas-00001.dat";
 
-    //auto [point_pairs, index_pairs] = perform_correspondences(file_path_meas_0, file_path_meas_1);
+    PointCloud pc0 = read_meas_file(file_path_meas_0);
+    PointCloud pc1 = read_meas_file(file_path_meas_1);
 
-    std::pair<CorresponcesPairVector, IntPairVector> result = perform_correspondences(file_path_meas_0, file_path_meas_1);
+    Vector2fVector image_points_0 = pc0.extractImagePoints();
+    Vector2fVector image_points_1 = pc1.extractImagePoints();
+    Vector2fVector current_image_points = image_points_1; 
+
+    // --------------------- CORRESPONDENCES ---------------------
+    auto result = perform_correspondences(file_path_meas_0, file_path_meas_1);
     CorresponcesPairVector point_pairs = result.first;
     IntPairVector index_pairs = result.second;
 
-    Vector2fVector coordinates_meas_0, coordinates_meas_1;
-    for (const auto& [m0, m1] : point_pairs) {
-        coordinates_meas_0.push_back(m0.segment<2>(1)); // image point from meas-00000
-        coordinates_meas_1.push_back(m1.segment<2>(1)); // image point from meas-00001
-    }
+    std::cout << "[INFO] Correspondences: " << index_pairs.size() << "\n";
 
-    // Initial estimation
-    PointCloud point_cloud_0 = read_meas_file(file_path_meas_0);
-    PointCloud point_cloud_1 = read_meas_file(file_path_meas_1);
-    Eigen::Matrix3f F = eight_point_algorithm(cam, point_cloud_0, point_cloud_1, point_pairs);
-    Eigen::Matrix3f E = compute_essential_matrix(cam, F);
-    Eigen::Matrix3f R1, R2;
-    Eigen::Vector3f t;
-    std::tie(R1, R2, t) = compute_rotation_translation(E);
-
-    Eigen::Isometry3f init_pose = estimate_transform(cam.cameraMatrix(), point_pairs, point_cloud_0, point_cloud_1, R1, R2, t);
+    // --------------------- ESTIMATING POSE ---------------------
+    Eigen::Isometry3f init_pose = estimate_transform(K, index_pairs, image_points_0, image_points_1);
     std::cout << "[Epipolar] Initial pose (frame 0 -> 1):\n" << init_pose.matrix() << "\n";
 
-    
-    // Triangulate initial 3D points
+    // --------------------- TRIANGULATION ---------------------
     Vector3fVector world_points;
-    triangulate_points(cam.cameraMatrix(), init_pose, point_pairs, point_cloud_0, point_cloud_1, world_points);
+    triangulate_points(K, init_pose, index_pairs, image_points_0, image_points_1, world_points);
 
-    // Initialize PICP solver
+    std::cout << "[INFO] World points triangolati: " << world_points.size() << "\n";
+
+    // --------------------- SOLVER ---------------------
     PICPSolver solver;
     solver.setKernelThreshold(10000);
 
@@ -55,10 +69,12 @@ int main (int argc, char** argv) {
 
     Eigen::Isometry3f current_pose = init_pose;
     
-    for (int i = 2; i < TOTAL_MEAS; ++i) {
+    // --------------------- LOOP ---------------------
+    for (int i = 1; i < TOTAL_MEAS; ++i) { 
 
         std::cout << "Current iteration: " << i << std::endl;
 
+        // Reading measurement
         std::ostringstream prev_path, curr_path;
         prev_path << "../data/meas-" << std::setw(5) << std::setfill('0') << i - 1 << ".dat";
         curr_path << "../data/meas-" << std::setw(5) << std::setfill('0') << i << ".dat";
@@ -66,47 +82,75 @@ int main (int argc, char** argv) {
         PointCloud meas_prev = read_meas_file(prev_path.str());
         PointCloud meas_curr = read_meas_file(curr_path.str());
 
-        //auto [correspondences, index_corr] = perform_correspondences(prev_path.str(), curr_path.str());
-        std::pair<CorresponcesPairVector, IntPairVector> result = perform_correspondences(file_path_meas_0, file_path_meas_1);
+        // Finding correspondences between measurements
+        auto result = perform_correspondences(prev_path.str(), curr_path.str());
         CorresponcesPairVector correspondences = result.first;
         IntPairVector index_corr = result.second;
 
         Vector2fVector img_prev, img_curr;
-        for (const auto& [m0, m1] : correspondences) {
-            img_prev.push_back(m0.segment<2>(1));
-            img_curr.push_back(m1.segment<2>(1));
+        for (const auto& [id1, id2] : index_corr) {
+            Point point1 = meas_prev.getPointWithId(id1);
+            Point point2 = meas_curr.getPointWithId(id2);
+        
+            float x1 = std::get<0>(point1.image_point);
+            float y1 = std::get<1>(point1.image_point);
+            float x2 = std::get<0>(point2.image_point);
+            float y2 = std::get<1>(point2.image_point);
+        
+            img_prev.emplace_back(x1, y1);
+            img_curr.emplace_back(x2, y2);
+        }
+        // Mapping of 3D points
+        IntPairVector map_ref_to_world;
+        for (size_t i = 0; i < index_corr.size(); ++i) {
+            map_ref_to_world.emplace_back(index_corr[i].first, i);  // world_points[i]
         }
 
-        // Trasforma i punti 3D nel sistema attuale
+        // Ora puoi ottenere (curr_idx, world_idx)
+        IntPairVector map_curr_to_world = extract_correspondences_world(index_corr, map_ref_to_world);
+
+
+        // Transform 3D point in the current system
         Vector3fVector transformed_points;
         for (const auto& p : world_points)
             transformed_points.push_back(current_pose * p);
-        
-        // Stima nuova pose con PICP
+
+        // Estimating pose with PICP
         cam.setWorldInCameraPose(Eigen::Isometry3f::Identity());
         solver.init(cam, transformed_points, img_curr);
+        for(int j=0; j<100; j++){
+            //solver.oneRound(index_corr, false);
+            solver.oneRound(map_curr_to_world, false);
+        }
 
-        solver.oneRound(index_corr, false);
- 
-        std::cout << " round fatto" << std::endl;
         cam = solver.camera();
         current_pose = cam.worldInCameraPose();
         trajectory.push_back(current_pose);
- 
+
         std::cout << "[PICP] Frame " << i << " pose:\n" << current_pose.matrix() << "\n";
 
-        // Triangola nuovi punti per aggiornare la mappa
-        triangulate_points(cam.cameraMatrix(), current_pose, correspondences, meas_prev, meas_curr, world_points);
+        // Triangulate new points
+        world_points.clear();
+        triangulate_points(K, current_pose, index_corr, img_prev, img_curr, world_points, map_curr_to_world);
+        std::cout << "[INFO] World points triangulated: " << world_points.size() << "\n";
+        int n_valid = 0;
+        for (const auto& p : world_points) {
+            if (!p.allFinite()) {
+                std::cerr << "[ERROR] Triangolato punto NON valido (NaN o Inf): " << p.transpose() << "\n";
+            } else {
+                n_valid++;
+            }
+        }
     }
  
-
-    // Extraicitn ground thruht and comparing trajectory
+    
+    // --------------------- SAVING DATA ---------------------
     std::string file_path_trajectory = "../data/trajectory.dat";
     Vector7fVector gt_trajectory_full = read_trajectory_file(file_path_trajectory);
 
     Vector3fVector gt_points;
     for (const auto& row : gt_trajectory_full) {
-        gt_points.push_back(row.segment<3>(4)); // [4],[5],[6]
+        gt_points.push_back(row.segment<3>(4));
     }
 
     Vector3fVector estimated_points;
@@ -115,7 +159,7 @@ int main (int argc, char** argv) {
     }
 
     write_trajectory_on_file(gt_points, estimated_points);
-
+    
     std::cout << "VO completed. Trajectory saved to 'trajectory_estimated.txt'\n";
     
 }

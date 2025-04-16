@@ -46,6 +46,7 @@ class PointCloud {
         /**
          * @brief Useful function to return a vector of local_id_and_appaerance
          *        to used kd-tree in an easier way
+         * @return Vector11fVector of point containing local_id_and_appaerance
          */
         Vector11fVector extractLocalIdAndAppearance() const {
             Vector11fVector result;
@@ -55,6 +56,20 @@ class PointCloud {
             return result;
         }
 
+        /**
+         * @brief Useful function to return a vector image coordinate
+         * @return Vector2fVector of point containing image coordinate
+         */
+        Vector2fVector extractImagePoints() {
+            Vector2fVector image_points;
+            for (const auto& point : point_cloud_vector) {
+                float x = std::get<0>(point.image_point);
+                float y = std::get<1>(point.image_point);
+                image_points.emplace_back(x, y);
+            }
+            return image_points;
+        }
+        
         size_t size() const {
             return point_cloud_vector.size();
         }

@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     }
 
     for (const auto& query_point : points2) {
-      Vector11f* nearest_neighbor = kd_tree.fullSearchCustom_v2(query_point, 1.0f);
+      Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 1.0f);
     
       if (nearest_neighbor != nullptr) {
           for (int i = 0; i < 11; ++i) {
@@ -44,6 +44,4 @@ int main(int argc, char** argv) {
     string input_file = "output_pairs.txt";  
     string output_file = "output_pairs_cleaned.txt";  
 
-    // Call the function to edit the file
-    //auto c_vector = compute_correspondences(input_file, output_file);
 }

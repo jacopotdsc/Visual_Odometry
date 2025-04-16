@@ -137,27 +137,27 @@ std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::st
     IntPairVector int_correspondences;
 
     // opening file to write
-    std::ofstream output(file_to_write, std::ios::out);
-    if (!output.is_open()) {
-        std::cerr << "Errore apertura file: " << std::endl;
-    }
+    //std::ofstream output(file_to_write, std::ios::out);
+    //if (!output.is_open()) {
+    //    std::cerr << "Errore apertura file: " << std::endl;
+    //}
 
     // Initializing kdtree and seek for correspondences
     TreeNodeType kd_tree(meas_prev.begin(), meas_prev.end(), 10);
 
     for (const auto& query_point : meas_next) {
-        Vector11f* nearest_neighbor = kd_tree.fullSearchCustom_v2(query_point, 1.0f);
+        Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 1.0f);
         
         if (nearest_neighbor != nullptr) {
             for (int i = 0; i < 11; ++i) {
-                output << (*nearest_neighbor)[i] << " "; 
+                //output << (*nearest_neighbor)[i] << " "; 
             }
-            output << std::endl;  
+            //output << std::endl;  
     
             for (int i = 0; i < 11; ++i) {
-                output << query_point[i] << " ";  
+                //output << query_point[i] << " ";  
             }
-            output << std::endl << std::endl;  
+            //output << std::endl << std::endl;  
             
             Vector11f prev_point(*nearest_neighbor);
             Vector11f next_point(query_point);

@@ -69,40 +69,23 @@ public:
     }
   }
 
-  void fullSearchCustom(PointType* answers,
-                        const PointType& query,
-                        Scalar norm) {
-    if (! _left && !_right) {
-      bruteForceSearchCustom(answers, _begin, _end, query, norm);
-      return;
-    }
-    Scalar distance_from_split_plane =  (query.tail(Dim-1)-_mean).dot(_normal);
-    if (distance_from_split_plane < -norm )
-      _left->fullSearchCustom(answers,query, norm);
-    else if (distance_from_split_plane > norm )
-      _right->fullSearchCustom(answers,query,norm);
-    else {
-      _left->fullSearchCustom(answers,query, norm);
-      _right->fullSearchCustom(answers,query,norm);
-    }
-  }
 
-  PointType* fullSearchCustom_v2( const PointType& query,
+  PointType* fullSearchCustom( const PointType& query,
                                   Scalar norm) {
     if (! _left && !_right) {
-      return bruteForceSearchCustom_v2(_begin, _end, query, norm);
+      return bruteForceSearchCustom(_begin, _end, query, norm);
     }
     Scalar distance_from_split_plane =  (query.tail(Dim-1)-_mean).dot(_normal);
 
     if (distance_from_split_plane < -norm ){
-      return _left->fullSearchCustom_v2(query, norm);
+      return _left->fullSearchCustom(query, norm);
     }
     else if (distance_from_split_plane > norm ){
-      return _right->fullSearchCustom_v2(query, norm);
+      return _right->fullSearchCustom(query, norm);
     }
 
-    PointType* point_left  = _left->fullSearchCustom_v2(query, norm);
-    PointType* point_right = _right->fullSearchCustom_v2(query, norm);
+    PointType* point_left  = _left->fullSearchCustom(query, norm);
+    PointType* point_right = _right->fullSearchCustom(query, norm);
     Scalar distance_left = norm*norm;
     Scalar distance_right = norm*norm;
 

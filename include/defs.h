@@ -36,6 +36,7 @@ using CorresponcesPairVector = std::vector< std::pair< PairType, PairType >, Eig
 
 typedef Eigen::Matrix<float, 7, 1> Vector7f;
 typedef std::vector<Vector7f, Eigen::aligned_allocator<Vector7f> > Vector7fVector;
+typedef std::pair<Eigen::Isometry3f,Eigen::Isometry3f> IsometryPair;
 
 typedef std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f> > Vector4fVector;
 typedef std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > Vector3fVector;

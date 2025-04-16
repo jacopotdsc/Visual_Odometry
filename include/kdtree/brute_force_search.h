@@ -20,33 +20,7 @@ int bruteForceSearch(std::vector<typename IteratorType_::value_type*>& answers,
 }
 
 template <typename IteratorType_>
-void bruteForceSearchCustom(
-                    typename IteratorType_::value_type* answers,
-                     IteratorType_ begin,
-                     IteratorType_ end,
-                     const typename IteratorType_::value_type& query,
-                     const typename IteratorType_::value_type::Scalar norm) {
-  
-  using Scalar = typename IteratorType_::value_type::Scalar;
-  Scalar best_squared_norm=norm*norm;
-
-  //Scalar best_distance = 999.0f;
-  for (auto it=begin; it!=end; ++it) {
-    
-    auto& p=*it;
-
-    float current_distance = (p-query).tail(IteratorType_::value_type::RowsAtCompileTime-1).squaredNorm();
-
-    if ( current_distance < best_squared_norm) {
-      *answers = p;
-      best_squared_norm = current_distance;
-
-    }
-  }
-}
-
-template <typename IteratorType_>
-typename IteratorType_::value_type* bruteForceSearchCustom_v2(IteratorType_ begin,
+typename IteratorType_::value_type* bruteForceSearchCustom(IteratorType_ begin,
                                                               IteratorType_ end,
                                                               const typename IteratorType_::value_type& query,
                                                               const typename IteratorType_::value_type::Scalar norm) {
