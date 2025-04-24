@@ -5,6 +5,7 @@
 #include <Eigen/Cholesky>
 #include <Eigen/StdVector>
 #include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 
 #include <iostream>
 #include <fstream>

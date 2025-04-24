@@ -35,3 +35,8 @@ std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::st
  * @return Vector containing information of trajectory.dat
 */
 Vector7fVector read_trajectory_file(const std::string& file_path);
+
+/**
+ * @brief write on file ground thruth point and estimated onees
+ */
+void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points);

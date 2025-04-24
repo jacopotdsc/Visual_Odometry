@@ -7,23 +7,6 @@
 
 #define TOTAL_MEAS 120
 
-IntPairVector extract_correspondences_world(const IntPairVector& correspondences_imgs,const IntPairVector& correspondences_world){
-    IntPairVector correspondences; correspondences.reserve(correspondences_imgs.size());
-
-    for(size_t i=0;i<correspondences_imgs.size();i++){
-        const int idx_ref=correspondences_imgs[i].first;
-        for(size_t j=0;j<correspondences_world.size();j++){
-            if(correspondences_world[j].first==idx_ref){
-                correspondences.push_back(IntPair(correspondences_imgs[i].second,correspondences_world[j].second));
-                break;
-            }
-        }
-    }
-    return correspondences;
-
-}
-
-
 int main (int argc, char** argv) {
     
     // --------------------- CAMERA ---------------------
@@ -106,10 +89,6 @@ int main (int argc, char** argv) {
             map_ref_to_world.emplace_back(index_corr[i].first, i);  // world_points[i]
         }
 
-        // Ora puoi ottenere (curr_idx, world_idx)
-        IntPairVector map_curr_to_world = extract_correspondences_world(index_corr, map_ref_to_world);
-
-
         // Transform 3D point in the current system
         Vector3fVector transformed_points;
         for (const auto& p : world_points)
@@ -119,8 +98,7 @@ int main (int argc, char** argv) {
         cam.setWorldInCameraPose(Eigen::Isometry3f::Identity());
         solver.init(cam, transformed_points, img_curr);
         for(int j=0; j<100; j++){
-            //solver.oneRound(index_corr, false);
-            solver.oneRound(map_curr_to_world, false);
+            solver.oneRound(index_corr, false);
         }
 
         cam = solver.camera();
@@ -131,7 +109,7 @@ int main (int argc, char** argv) {
 
         // Triangulate new points
         world_points.clear();
-        triangulate_points(K, current_pose, index_corr, img_prev, img_curr, world_points, map_curr_to_world);
+        triangulate_points(K, current_pose, index_corr, img_prev, img_curr, world_points);
         std::cout << "[INFO] World points triangulated: " << world_points.size() << "\n";
         int n_valid = 0;
         for (const auto& p : world_points) {

@@ -1,13 +1,23 @@
 #include "epipolar_geometry.h"
 
 ////////////////////////////////////////////////////////
+/**
+ * @brief   Given to matrix and their rays, I want to find minium distance 
+ *          between rays using minium quadratic:
+ *          Given min( | Ax - b | ) with A = D*[s; t], b = p2, D = [-d1, d2]
+ *        
+ *          r1 = r2 ->  s*d1 = p2 + t*d2 -> [-d1 d2]*[s; t] = -p2
+ *          -(D^T D)^-1 * D^T * p2 ( classic solution of minium quadritc problem )
+ *         
+ * @param d1, d2 ray of first and second camera
+ * @param p2 position of the second camera respect to the first 
+ */
 bool triangulate_point(const Eigen::Vector3f& d1,const Eigen::Vector3f& d2,const Eigen::Vector3f& p2,Eigen::Vector3f& p){
     Eigen::Matrix<float,3,2> D;
     D.col(0)=-d1;
-    D.col(1)=d2;
-    const Eigen::Vector2f ss=-(D.transpose() * D).ldlt().solve(D.transpose() * p2);
-    
-        
+    D.col(1)= d2;
+    const Eigen::Vector2f ss = -(D.transpose() * D).ldlt().solve(D.transpose() * p2);
+      
     if(ss(0)<0 || ss(1)<0)
         return false;
 
@@ -24,17 +34,22 @@ int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X, con
     const Eigen::Matrix3f iK = k.inverse();
     const Eigen::Matrix3f iRiK = iX.linear()*iK;
     const Eigen::Vector3f t= iX.translation();
+
     int n_success=0;
     triangulated.resize(correspondences.size());
+
     for (const IntPair& correspondence: correspondences){
         const int idx_first=correspondence.first;
         const int idx_second=correspondence.second;
+
         Eigen::Vector3f d1;
         d1 << p1_img[idx_first],1;
         d1 = iK*d1;
+
         Eigen::Vector3f d2;
         d2 << p2_img[idx_second],1;
         d2 = iRiK*d2;
+
         Eigen::Vector3f p;
         if(triangulate_point(d1,d2,t,p)){
             triangulated[n_success]=p;
@@ -118,7 +133,6 @@ const Eigen::Matrix3f estimate_fundamental(const IntPairVector& correspondences,
         const Eigen::Matrix3f m=d1*d2.transpose();
         A.row(i)<<m(0,0),m(0,1),m(0,2),m(1,0),m(1,1),m(1,2),m(2,0),m(2,1),m(2,2);
     }
-
     const Eigen::JacobiSVD<Eigen::MatrixXf> svd(A,Eigen::ComputeThinV);
     Vector9f v=svd.matrixV().col(8);
     Eigen::Matrix3f Fa;
@@ -140,8 +154,8 @@ const Eigen::Matrix3f estimate_fundamental(const IntPairVector& correspondences,
 
 const IsometryPair essential2transformPair(const Eigen::Matrix3f& E){
     const Eigen::Matrix3f w((Eigen::Matrix3f() << 0.f, -1.f, 0.f,
-                                                 1.f, 0.f, 0.f,
-                                                 0.f, 0.f, 1.f).finished());
+                                                1.f, 0.f, 0.f,
+                                                0.f, 0.f, 1.f).finished());
     //1st solution                                
     const Eigen::JacobiSVD<Eigen::Matrix3f> svd(E,Eigen::ComputeFullU | Eigen::ComputeFullV);
     Eigen::Matrix3f v=svd.matrixV();
@@ -207,13 +221,92 @@ const Eigen::Isometry3f estimate_transform(const Eigen::Matrix3f k, const IntPai
     return X_best;
 }
 
+/*
+const IsometryPair decompose_essential_matrix(const Eigen::Matrix3f& E){
+    Eigen::Matrix3f W;
+    W <<    0.f, -1.f, 0.f,
+            1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f;
+
+    // First solution                                
+    const Eigen::JacobiSVD<Eigen::Matrix3f> svd(E,Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3f V = svd.matrixV();
+    Eigen::Matrix3f U = svd.matrixU();
+    Eigen::Matrix3f R1 = V*W*U.transpose();
+    if(R1.determinant()<0){
+        const Eigen::JacobiSVD<Eigen::Matrix3f> svd(-E, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        V = svd.matrixV();
+        U = svd.matrixU();
+        R1 = V*W*U.transpose();
+    }
+    Eigen::Isometry3f X1=Eigen::Isometry3f::Identity();
+    X1.linear()=R1;
+    Eigen::Matrix3f t_skew=R1*E;
+    X1.translation()=Eigen::Vector3f(t_skew(2,1),t_skew(0,2),t_skew(1,0));
+
+    // Second solution
+    Eigen::Matrix3f R2=V*W.transpose()*U.transpose();
+    Eigen::Isometry3f X2=Eigen::Isometry3f::Identity();
+    X2.linear()=R2;
+    t_skew=R2*E;
+    X2.translation()=Eigen::Vector3f(t_skew(2,1),t_skew(0,2),t_skew(1,0));
+
+    IsometryPair X12(X1,X2);
+    return X12;
+}
+
+const Eigen::Isometry3f estimate_transform(const Eigen::Matrix3f k, const IntPairVector& correspondences, 
+    const Vector2fVector& p1_img, const Vector2fVector& p2_img){
+
+    Eigen::Matrix3f F = estimate_fundamental(correspondences,p1_img,p2_img);
+    Eigen::Matrix3f E = k.transpose()*F*k;    
+    const IsometryPair X12 = decompose_essential_matrix(E);
+
+    int n_test=0,n_in_front=0;
+    Eigen::Isometry3f X_best=Eigen::Isometry3f::Identity();
+    Vector3fVector triang;
+
+    // Test Isometry(R1, t)
+    Eigen::Isometry3f X_test=std::get<0>(X12);
+    n_test=triangulate_points(k,X_test,correspondences,p1_img,p2_img,triang);
+    if (n_test > n_in_front){
+        n_in_front=n_test;
+        X_best=X_test;
+    }
+
+    //Test Isometry(R1, -t)
+    X_test.translation()=-X_test.translation().eval();
+    n_test=triangulate_points(k,X_test,correspondences,p1_img,p2_img,triang);
+    if (n_test > n_in_front){
+        n_in_front=n_test;
+        X_best=X_test;
+    }
+
+    //Test Isometry(R2, t)
+    X_test=std::get<1>(X12);
+    n_test=triangulate_points(k,X_test,correspondences,p1_img,p2_img,triang);
+    if (n_test > n_in_front){
+        n_in_front=n_test;
+        X_best=X_test;
+    }
+
+    //Test Isometry(R2, -t)
+    X_test.translation()=-X_test.translation().eval();
+    n_test=triangulate_points(k,X_test,correspondences,p1_img,p2_img,triang);
+    if (n_test > n_in_front){
+        n_in_front=n_test;
+        X_best=X_test;
+    }
+    return X_best;
+}
+*/
 ////////////////////////////////////////////////////////
 
 
 Eigen::Matrix3f normalize_measurement(const Camera& camera, PointCloud& point_cloud) {
     
-    float width = camera._cols;
-    float height = camera._rows;
+    float width = camera.cols();
+    float height = camera.rows();
 
     Eigen::Matrix3f T;
     T << 2.0f / width, 0, -1.0f,  
@@ -297,7 +390,7 @@ Eigen::Matrix3f eight_point_algorithm(Camera& camera_params, PointCloud& point_c
 
 Eigen::Matrix3f compute_essential_matrix(Camera& camera_params, Eigen::Matrix3f F){
 
-    Eigen::Matrix3f K = camera_params._camera_matrix;
+    Eigen::Matrix3f K = camera_params.cameraMatrix();
     return K.transpose()*F*K;
 }
 

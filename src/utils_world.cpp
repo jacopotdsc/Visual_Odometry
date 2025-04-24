@@ -57,3 +57,44 @@ void makeWorld(Vector3fVector& world_points,
         putPointsOnSegment3D(world_points, p0, p1, density);
     }
 }
+
+void generate_isometry3f(Eigen::Isometry3f& X){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+
+    Eigen::Vector3f a = Eigen::Vector3f::NullaryExpr(3,1,[&](){return dis(gen);});
+    a.normalize();
+    Eigen::AngleAxisf random_angle_axis(dis(gen),a);
+    Eigen::Matrix3f rotation_matrix = Eigen::Matrix3f(random_angle_axis);
+
+    X.linear()=rotation_matrix;
+    X.translation()=Eigen::Vector3f::NullaryExpr(3,1,[&](){return dis(gen);});
+}
+
+std::pair<int, int> counter_equal(CorresponcesPairVector point_pairs){
+    int counter_equal = 0;
+    int counter_different = 0;
+    for (size_t i = 0; i < point_pairs.size(); i++) {
+        const auto& tuple = point_pairs[i];
+        const auto& v1 = tuple.first;
+        const auto& v2 = tuple.second;
+    
+        bool equal = true;
+        for (int j = 1; j < 11; ++j) { 
+            if (std::abs(v1[j] - v2[j]) > 0) {
+                equal = false;
+                counter_different += 1;
+                std::cout << "-------\ntuple " << i << " == "<< (equal ? "UGUALI" : "DIVERSI") << "\n\t[1] " << v1.transpose()
+                          << "\n\t[2] " << v2.transpose()<< "\n";
+                break;
+            }
+        }
+        counter_equal += 1;
+
+        //std::cout << "-------\ntuple " << i << " == "<< (equal ? "UGUALI" : "DIVERSI") << "\n\t[1] " << v1.transpose()
+        //          << "\n\t[2] " << v2.transpose()<< "\n";
+    }
+
+    return std::make_pair(counter_equal, counter_different);
+}

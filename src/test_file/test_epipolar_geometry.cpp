@@ -1,99 +1,119 @@
+#include "defs.h"
+#include "utils_world.h"
 #include "utils_file.h"
 #include "epipolar_geometry.h"
-#include <opencv2/opencv.hpp>
+#include "picp_solver.h"
+
+void print_comparison(const Eigen::Isometry3f& X_est, const Eigen::Isometry3f& X_gt,const std::string title={}){
+    if(!title.empty())
+        std::cout << title << std::endl;
+    std::cout <<"R estimated:\n";
+    std::cout << X_est.linear() << std::endl;
+    std::cout << "R gt:\n";
+    std::cout << X_gt.linear() << std::endl;
+    const Eigen::Vector3f t_est=X_est.translation();
+    const Eigen::Vector3f t_gt=X_gt.translation();
+    //std::cout << "t ratio: ";
+    //for (int i=0;i<3;i++)
+    //    std::cout << t_est(i)/t_gt(i) << ", ";
+    //std::cout << std::endl;
+
+    std::cout << "Translation error (norm): " << (t_est - t_gt).norm() << std::endl;
+    std::cout << "Translation estimated: " << t_est.transpose() << std::endl;
+    std::cout << "Translation ground truth: " << t_gt.transpose() << std::endl;
+}
 
 int main(int argc, char** argv) {
-    std::string file_path_meas = "../data/meas-00000.dat"; 
+
+    // --------------------- CAMERA ---------------------
     std::string file_path_camera = "../data/camera.dat";
+    Camera cam = read_camera_file(file_path_camera);
+    //std::cout << "[CAMPS] Camera matrix:\n" << cam.cameraMatrix() << std::endl;
 
-    Camera camera_params = read_camera_file(file_path_camera);
-    PointCloud point_cloud = read_meas_file(file_path_meas);
+    // --------------------- MEASUREMENTS ---------------------
+    std::ostringstream oss_curr, oss_new;
+    int id_file_curr = 0;
+    int id_file_new = id_file_curr + 1;
+    oss_curr << "../data/meas-" << std::setw(5) << std::setfill('0') << id_file_curr << ".dat";
+    oss_new  << "../data/meas-" << std::setw(5) << std::setfill('0') << id_file_new  << ".dat";
 
-    /********************************************************************/
-    std::cout << "\nTEST: normalize_measurement" << std::endl;
-    Eigen::Matrix3f T = normalize_measurement(camera_params, point_cloud);
+    std::string file_path_meas_curr = oss_curr.str();
+    std::string file_path_meas_new  = oss_new.str();
+
+    PointCloud pc_curr = read_meas_file(file_path_meas_curr);
+    PointCloud pc_new  = read_meas_file(file_path_meas_new);
+
+    Vector2fVector reference_image_points = pc_curr.extractImagePoints();
+    Vector2fVector current_measurements   = pc_new.extractImagePoints();
+
+    std::cout << "[MEAS] current: " << file_path_meas_curr << std::endl;
+    std::cout << "[MEAS] new:     " << file_path_meas_new  << std::endl;
+    std::cout << "[PROJT] Points in reference_image_points: " << reference_image_points.size() << std::endl;
+    std::cout << "[PROJT] Points in current_measurements:    " << current_measurements.size() << std::endl;
+
+    // --------------------- CORRISPONDENZE ---------------------
+    auto result_corr = perform_correspondences(file_path_meas_curr, file_path_meas_new);
+    CorresponcesPairVector corr_pair = result_corr.first;
+    IntPairVector correspondences = result_corr.second;
+
+    std::cout << "[CORRS] Correspondences: " << correspondences.size() << std::endl;
+
+    // --------------------- STIMA TRASFORMAZIONE EPIPOLARE ---------------------
+    Eigen::Isometry3f X_est = estimate_transform(cam.cameraMatrix(), correspondences, reference_image_points, current_measurements);
+    //print_comparison(X_est,X_gt1,"**********EPIPOLAR RESULTS**********");
+    //std::cout << "[EP] translation: " << X_est.translation().transpose() << std::endl;
+
+    // --------------------- TRIANGOLAZIONE ---------------------
+    Vector3fVector world_points_est;
+    IntPairVector correspondences_new;
+    triangulate_points(cam.cameraMatrix(), X_est, correspondences, reference_image_points, current_measurements, world_points_est, correspondences_new);
+
+    // --------------------- PICP ---------------------
+    PICPSolver solver;
+    solver.setKernelThreshold(10000);
+
+    Vector3fVector points_in_cameraframe1;
+    for (const auto& p : world_points_est)
+        points_in_cameraframe1.push_back(X_est * p);
+
+    cam.setWorldInCameraPose(Eigen::Isometry3f::Identity());
+    solver.init(cam, points_in_cameraframe1, current_measurements);
+
+    for (int i = 0; i < 100; ++i)
+        solver.oneRound(correspondences_new, false);
+
+    cam = solver.camera();
+    Eigen::Isometry3f cam_in_world = cam.worldInCameraPose().inverse();
+    //print_comparison(cam.worldInCameraPose(),*(X_gt1.inverse()),"**********PICP RESULTS**********");
     
-    std::cout << "\n Normalizer matrix:\n" << T << std::endl;
+    //std::cout << "[IP] Translation (camera in world): " << cam_in_world.translation().transpose() << std::endl;
 
-    const auto& points = point_cloud.getPoints();
-    for (size_t i = 0; i < 5 && i < points.size(); ++i) {
-        const auto& point = points[i];
-        
-        const auto& image_point = point.image_point;
-        std::cout << "Point " << point.local_id_and_appaerance[0] << " image point: ("
-                  << std::get<0>(image_point) << ", "
-                  << std::get<1>(image_point) << ") ";
-        
-        const auto& normalized_image_point = point.normalized_image_point;
-        std::cout << "--> ("
-                  << std::get<0>(normalized_image_point) << ", "
-                  << std::get<1>(normalized_image_point) << ")\n";
-    } 
-    /********************************************************************/
-    std::cout << "\nTEST: Initial Estimant adn triangulation" << std::endl;
+    // --------------------- READ GROUND TRUTH ---------------------
+    std::string gt_file_path = "../data/trajectory.dat";
+    Vector7fVector trajectory_data = read_trajectory_file(gt_file_path);
 
-     // --------------------- CAMERA ---------------------
-     Camera cam = read_camera_file(file_path_camera);
- 
-     // --------------------- MEASUREMENTS ---------------------
-     std::string file_path_meas_0 = "../data/meas-00000.dat";
-     std::string file_path_meas_1 = "../data/meas-00001.dat";
- 
-     PointCloud pc0 = read_meas_file(file_path_meas_0);
-     PointCloud pc1 = read_meas_file(file_path_meas_1);
- 
-     Vector2fVector p1_img = pc0.extractImagePoints();  // frame 0
-     Vector2fVector p2_img = pc1.extractImagePoints();  // frame 1
- 
-     // --------------------- CORRESPONDENZE ---------------------
-     auto result = perform_correspondences(file_path_meas_0, file_path_meas_1);
-     CorresponcesPairVector point_pairs = result.first;
-     IntPairVector index_pairs = result.second;
- 
-     std::cout << "Correspondences: : " << index_pairs.size() << "\n";
- 
-     // --------------------- STIMA TRANSFORMAZIONE RELATIVA ---------------------
-     Eigen::Isometry3f estimated_T = estimate_transform(cam._camera_matrix, index_pairs, p1_img, p2_img);
-     std::cout << "Estimated transformation \n" << estimated_T.matrix() << "\n";
-    
-     Vector3fVector triangulated_points;
-     int n_triangulated = triangulate_points(cam._camera_matrix, estimated_T, index_pairs, p1_img, p2_img, triangulated_points);
- 
-     std::cout << "Triangulated " << n_triangulated << " points\n";
-     for (int i = 0; i < 5; ++i) {
-         std::cout << "Point " << i << ": " << triangulated_points[i].transpose() << "\n";
-     }
+    Eigen::Vector3f gt_translation_curr = Eigen::Vector3f::Zero();
+    Eigen::Vector3f gt_translation_new  = Eigen::Vector3f::Zero();
 
+    for (const auto& data : trajectory_data) {
+        int pose_id = static_cast<int>(data[0]);
+        if (pose_id == id_file_curr) {
+            gt_translation_curr << data[4], data[5], data[6];
+        }
+        if (pose_id == id_file_new) {
+            gt_translation_new << data[4], data[5], data[6];
+        }
+    }
 
-    //Eigen::Matrix3f F = eight_point_algorithm(camera_params, point_cloud_1, point_cloud_2, correspondence_vector);
-    //Eigen::Matrix3f E = compute_essential_matrix(camera_params, F);
+    // --------------------- ERROR ---------------------
+    Eigen::Vector3f estimated_translation = cam_in_world.translation();
+    Eigen::Vector3f translation_error = gt_translation_new - estimated_translation;
 
-    //std::cout << "\nFoundamental matrix: \n" << F << std::endl;
-    //std::cout << "\nEssential matrix:\n" << E << std::endl;
+    std::cout << "----------------------------------------------" << std::endl;
+    std::cout << "[GT-" << id_file_curr << "]: " << gt_translation_curr.transpose() << std::endl;
+    std::cout << "[GT-" << id_file_new  << "]: " << gt_translation_new.transpose()  << std::endl;
+    std::cout << "[EST]: " << estimated_translation.transpose() << std::endl;
+    std::cout << "Translation error: " << translation_error.transpose() << std::endl;
 
-    //Eigen::Matrix3f K = camera_params._camera_matrix;
-    //Eigen::Matrix3f F_back = K.transpose().inverse()*E*K.inverse();
-    //std::cout << "\nTesting from E to F:\n" << F_back << std::endl;
-
-    //Eigen::Matrix3f error_matrix = F_back - F;
-    //std::cout << "\nError matrix (F_back - F):\n" << error_matrix << std::endl;
-
-    /********************************************************************/
-    //std::cout << "\nTEST: Decomposing matrix E" << std::endl;
-
-    //auto [R1, R2, t] = compute_rotation_translation(E);
-
-    //std::cout << "Rotation Matrix R1:\n" << R1 << std::endl;
-    //std::cout << "Rotation Matrix R2:\n" << R2 << std::endl;
-    //std::cout << "Translation Vector t:\n" << t << std::endl;
-
-    /********************************************************************/
-    //std::cout << "\nTEST: Estimating transformation" << std::endl;
-
-    //Eigen::Isometry3f trasformation = estimate_transform(camera_params._camera_matrix, 
-    //                                                    correspondence_vector,
-    //                                                    point_cloud_1, point_cloud_2, R1, R2, t);
-
-    //std::cout << "Estimated transformation: \n" << trasformation.matrix() << std::endl;
-
+    return 0;
 }

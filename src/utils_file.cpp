@@ -83,20 +83,20 @@ PointCloud read_meas_file(const std::string& file_path) {
 }
 
 Camera read_camera_file(const std::string& file_path) {
-    Camera cam_params = Camera();
     std::ifstream input_stream(file_path);
     std::string word;
 
     if (!input_stream.is_open()) {
         std::cerr << "Error opening file: " << file_path << std::endl;
-        return cam_params;
+        return Camera();
     }
 
     input_stream >> word; // "camera"
     input_stream >> word; // "matrix:"
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            input_stream >> cam_params._camera_matrix(i, j);
+            //input_stream >> cam_params._camera_matrix(i, j);
+            input_stream >> word;
         }
     }
 
@@ -105,27 +105,38 @@ Camera read_camera_file(const std::string& file_path) {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             //input_stream >> cam_params.T_cam_robot(i, j);
-            input_stream >> cam_params._world_in_camera_pose(i, j);
+            //input_stream >> cam_params._world_in_camera_pose(i, j);
+            input_stream >> word;
         }
     }
 
-    input_stream >> word; 
-    input_stream >> cam_params._z_near;
 
-    input_stream >> word;
-    input_stream >> cam_params._z_far;
+    float z_near = 0.f, z_far = 0.f;
+    int cols = 0, rows = 0;
 
     input_stream >> word; 
-    input_stream >> cam_params._cols; //width;
+    input_stream >> z_near; //cam_params._z_near;
 
     input_stream >> word;
-    input_stream >> cam_params._rows; //height;
+    input_stream >> z_far; //cam_params._z_far;
+
+    input_stream >> word; 
+    input_stream >> cols; //cam_params._cols; //width;
+
+    input_stream >> word;
+    input_stream >> rows; //cam_params._rows; //height;
+
+    
+    Camera cam_params = Camera(rows, cols, z_near, z_far);
+
+    std::cout << "[read_camera_file] Set Isometry3f::Identity as WorldInCameraPose" << std::endl;
+    cam_params.setWorldInCameraPose(Eigen::Isometry3f::Identity());
 
     input_stream.close();
     return cam_params;
 }
 
-std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::string file_meas_prev, std::string file_meas_next ){
+std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::string file_meas_prev, std::string file_meas_next){
     
     // Initializing name of files
     std::string file_to_write  = getOutputFileName(file_meas_prev, file_meas_next);
@@ -146,7 +157,7 @@ std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::st
     TreeNodeType kd_tree(meas_prev.begin(), meas_prev.end(), 10);
 
     for (const auto& query_point : meas_next) {
-        Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 1.0f);
+        Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 0.1f);
         
         if (nearest_neighbor != nullptr) {
             for (int i = 0; i < 11; ++i) {
@@ -201,4 +212,20 @@ Vector7fVector read_trajectory_file(const std::string& file_path) {
     }
     input_stream.close();
     return trajectory_vector; 
+}
+
+void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points){
+    std::ofstream gt_file("gt_trajectory.csv");
+    gt_file << "x,y\n";
+    for (const auto& p : gt_points)
+        gt_file << p.x() << "," << p.y() << "," << p.z() << "\n";
+    gt_file.close();
+
+    std::ofstream est_file("estimated_trajectory.csv");
+    est_file << "x,y\n";
+    for (const auto& p : estimated_points)
+        est_file << p.x() << "," << p.y() << "," << p.z()  << "\n";
+    est_file.close();
+
+    std::cout << "Curve trajectories saved to gt_trajectory.csv and estimated_trajectory.csv\n";
 }

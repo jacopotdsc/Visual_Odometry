@@ -2,6 +2,7 @@
 #include "defs.h"
 #include "utils_file.h"
 #include "camera.h"
+#include <Eigen/Dense>
 
 /**
  * @param camera The camera parameters, including intrinsic parameters like the focal length and principal point.
@@ -78,17 +79,47 @@ std::tuple<Eigen::Matrix3f, Eigen::Matrix3f, Eigen::Vector3f> compute_rotation_t
 //////////////////////////////////////////////////77
 bool triangulate_point(const Eigen::Vector3f& d1,const Eigen::Vector3f& d2,const Eigen::Vector3f& p2,Eigen::Vector3f& p);
 
+/** 
+ * triangulate points given their projections on two images, and the relative pose between the cameras. Computes also
+ * a new set of correspondances between the triangulated points and the points in the second image
+ * @param k: 3x3 camera matrix
+ * @param X: relative pose of the first camera expressed in the frame of the second
+ * @param correspondences: correspondences (first: idx of the point in the first image, second: idx of the corresponding point in the second image)
+ * @param p1_img: points in the first image
+ * @param p2_img: points in the second image
+ * @param triangulated: this vector will contain the triangulated points
+ * @returns the number of successfully triangulated points
+ */
 int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X, const IntPairVector& correspondences,
                         const Vector2fVector& p1_img, const Vector2fVector& p2_img, Vector3fVector& triangulated);
 
-
-                        int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X, const IntPairVector& correspondences,
-                            const Vector2fVector& p1_img, const Vector2fVector& p2_img, Vector3fVector& triangulated, IntPairVector& correspondences_new);
+/** 
+ * triangulate points given their projections on two images, and the relative pose between the cameras. Computes also
+ * a new set of correspondances between the triangulated points and the points in the second image
+ * @param k: 3x3 camera matrix
+ * @param X: relative pose of the first camera expressed in the frame of the second
+ * @param correspondences: correspondences (first: idx of the point in the first image, second: idx of the corresponding point in the second image)
+ * @param p1_img: points in the first image
+ * @param p2_img: points in the second image
+ * @param triangulated: this vector will contain the triangulated points
+ * @param correspondences_new: this vector will contain the new correspondances (first: id of the measurement, second: id of the triangulated point)
+ * @returns the number of successfully triangulated points
+ */
+int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X, const IntPairVector& correspondences,
+    const Vector2fVector& p1_img, const Vector2fVector& p2_img, Vector3fVector& triangulated, IntPairVector& correspondences_new);
 
 Vector2fVector normalize(const Vector2fVector& p,Eigen::Matrix3f& T);
 
-const Eigen::Matrix3f estimate_fundamental(const IntPairVector& correspondences, 
-    const Vector2fVector& p1_img, const Vector2fVector& p2_img);
+//const Eigen::Matrix3f estimate_fundamental(const IntPairVector& correspondences, 
+//    const Vector2fVector& p1_img, const Vector2fVector& p2_img);
 
+/**
+ * Estimates the relative pose of the first camera expressed in the frame of the second
+ * @param k: 3x3 camera matrix
+ * @param correspondences: correspondences (first: idx of the point in the first image, second: idx of the corresponding point in the second image)
+ * @param p1_img: points in the first image
+ * @param p2_img: points in the second image
+ * @returns: the most consistent pose according to the number of successfully triangulated points
+ */ 
 const Eigen::Isometry3f estimate_transform(const Eigen::Matrix3f k, const IntPairVector& correspondences, 
     const Vector2fVector& p1_img, const Vector2fVector& p2_img);

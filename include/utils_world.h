@@ -31,3 +31,13 @@ void putPointsOnSegment3D(Vector3fVector& dest,const Eigen::Vector3f& start, con
  * @param density Number of points per unit length for each segment.
  */
 void makeWorld(Vector3fVector& world_points, const Eigen::Vector3f& lower_left_bottom, const Eigen::Vector3f& upper_right_top, int num_segments, float density);
+
+/**
+ * @brief Generates a random 3D isometric transformation (rotation + translation).
+ * @param X Output isometry (Eigen::Isometry3f) containing the generated transformation.
+ */
+void generate_isometry3f(Eigen::Isometry3f& X);
+
+/**
+*/
+std::pair<int, int> counter_equal(CorresponcesPairVector point_pairs);

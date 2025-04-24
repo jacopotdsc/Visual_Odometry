@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     }
 
     for (const auto& query_point : points2) {
-      Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 1.0f);
+      Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 0.1f);
     
       if (nearest_neighbor != nullptr) {
           for (int i = 0; i < 11; ++i) {

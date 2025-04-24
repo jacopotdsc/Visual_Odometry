@@ -37,12 +37,12 @@ int main() {
     std::cout << "\nTEST: read_camera_file" << std::endl;
     std::string file_path_camera = "../data/camera.dat";
     Camera cam_params = read_camera_file(file_path_camera);
-    std::cout << "Intrinsic Matrix (K):\n" << cam_params._camera_matrix << "\n";
+    std::cout << "Intrinsic Matrix (K):\n" << cam_params.cameraMatrix() << "\n";
     //std::cout << "Camera-to-Robot Transformation Matrix (T_cam_robot):\n" << cam_params.T_cam_robot << "\n";
-    std::cout << "z_near: " << cam_params._z_near << "\n";
-    std::cout << "z_far: " << cam_params._z_far << "\n";
-    std::cout << "width: " << cam_params._cols << "\n";
-    std::cout << "height: " << cam_params._rows << "\n";
+    std::cout << "z_near: " << cam_params.z_near() << "\n";
+    std::cout << "z_far: " << cam_params.z_far() << "\n";
+    std::cout << "width: " << cam_params.cols() << "\n";
+    std::cout << "height: " << cam_params.rows() << "\n";
 
     /********************************************************************/
 

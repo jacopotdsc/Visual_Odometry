@@ -51,9 +51,11 @@ class Camera{
     inline const Eigen::Matrix3f& cameraMatrix() const {return _camera_matrix;}
     inline const int rows() const {return _rows;}
     inline const int cols() const {return _cols;}
+    inline const int z_near() const {return _z_near;}
+    inline const int z_far() const {return _z_far;}
 
     
-  public:
+  protected:
     int _rows; // image_size
     int _cols; //
     int _z_near;
