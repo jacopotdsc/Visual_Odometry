@@ -1,13 +1,13 @@
 #pragma once
 #include "defs.h"
-#include "utils_file.h"
 
 // Structure which represented the single line of meas-xxxxx.dat file
 struct Point {
-    Vector11f local_id_and_appaerance; // vector composed by POINT_ID_CURRENT_MESUREMENT + APPEARANCE
+    Vector10f appaerance; // APPEARANCE
+    int local_point_id; // POINT_ID_CURRENT_MESUREMENT
     int actual_point_id; // ACTUAL_POINT_ID
-    std::tuple<float, float> image_point; //IMAGE_POINT, position on the image
-    std::tuple<float, float> normalized_image_point; // normalized IMAGE_POINT, used for 8-points algorithm
+    Eigen::Matrix<float,2,1> image_point; //IMAGE_POINT, position on the image
+    Eigen::Matrix<float,2,1> normalized_image_point; // normalized IMAGE_POINT, used for 8-points algorithm
 };
 
 // Class which contain all data read from meas-xxxxx.dat file
@@ -23,7 +23,7 @@ class PointCloud {
             point_cloud_vector.push_back(point);
         }
         
-        std::vector<Point>& getPoints(){
+        std::vector<Point> getPoints() const {
             return point_cloud_vector;
         }
 
@@ -31,11 +31,10 @@ class PointCloud {
          * @param idx_to_search Correspond to POINT_ID_CURRENT_MESUREMENT
          * @return Point structure with idx_to_search line of the meas-xxxxx.dat file
          */
-        Point getPointWithId(int idx_to_search ){
+        Point getPointWithId(int idx_to_search ) const{
             for (const auto& point : point_cloud_vector) {
 
-                int point_local_id = static_cast<int>( point.local_id_and_appaerance[0] );
-                if( point_local_id == idx_to_search){
+                if( point.local_point_id == idx_to_search){
                     return point;
                 }
             }
@@ -51,7 +50,43 @@ class PointCloud {
         Vector11fVector extractLocalIdAndAppearance() const {
             Vector11fVector result;
             for (const auto& point : point_cloud_vector) {
-                result.push_back(point.local_id_and_appaerance);
+                Vector11f combined;
+                combined[0] = point.local_point_id;
+                for (int i = 0; i < 10; ++i) {
+                    combined[i + 1] = point.appaerance[i];
+                }
+                result.push_back(combined);
+            }
+            return result;
+        }
+
+        Vector10fVector extractAppearance() const {
+            Vector10fVector result;
+            for (const auto& point : point_cloud_vector) {
+                result.push_back(point.appaerance);
+            }
+            return result;
+        }
+
+        Vector3fVector extractLocalIdAndImagePosition() {
+            Vector3fVector result;
+            for (const auto& point : point_cloud_vector) {
+                float id = static_cast<float>(point.local_point_id);
+                float x = point.image_point[0];
+                float y = point.image_point[1];
+                result.emplace_back(id, x, y);
+            }
+            return result;
+        }
+
+        Vector3fVector extractActualIdAndImagePosition() {
+            Vector3fVector result;
+            for (const auto& point : point_cloud_vector) {
+                float id = static_cast<float>(point.actual_point_id);
+                float x = point.image_point[0];
+                float y = point.image_point[1];
+                result.emplace_back(id, x, y);
+                //result.push_back(id, point.image_point);
             }
             return result;
         }
@@ -63,14 +98,27 @@ class PointCloud {
         Vector2fVector extractImagePoints() {
             Vector2fVector image_points;
             for (const auto& point : point_cloud_vector) {
-                float x = std::get<0>(point.image_point);
-                float y = std::get<1>(point.image_point);
-                image_points.emplace_back(x, y);
+                //float x = point.image_point[0];
+                //float y = point.image_point[1];
+                //image_points.emplace_back(x, y);
+                image_points.push_back(point.image_point);
             }
             return image_points;
         }
-        
+
         size_t size() const {
             return point_cloud_vector.size();
         }
+
+        void clear() {
+            point_cloud_vector.clear();
+        }
+
+        PointCloud& operator=(const PointCloud& other) {
+            if (this != &other) {
+                this->point_cloud_vector = other.point_cloud_vector;
+            }
+            return *this;
+        }
+
 };
