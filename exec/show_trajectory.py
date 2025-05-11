@@ -13,9 +13,13 @@ def load_file(filename):
         with open(filename, 'r') as f:
             lines = f.readlines()
         data = []
+        parsed_header = False
         for line in lines:
-            # Usa regex per separare su spazi multipli, tab o virgole
             parts = re.split(r'[\s,]+', line.strip())
+            if parsed_header == False:
+                parsed_header = True
+                continue
+            # Usa regex per separare su spazi multipli, tab o virgole
             if len(parts) >= 3:
                 data.append([float(p) for p in parts[:3]])
         return np.array(data)
