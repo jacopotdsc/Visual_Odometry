@@ -22,10 +22,14 @@
 
 #include <opencv2/opencv.hpp>
 #include "opencv2/opencv.hpp"
+
 #include "kdtree/eigen_kdtree.h"
 
 typedef Eigen::Matrix<float, 11, 1> Vector11f;
 typedef std::vector<Vector11f, Eigen::aligned_allocator<Vector11f>> Vector11fVector;
+
+typedef Eigen::Matrix<float, 10, 1> Vector10f;
+typedef std::vector<Vector10f, Eigen::aligned_allocator<Vector10f>> Vector10fVector;
 
 // Definitions for kd-tree
 using ContainerType = Vector11fVector; //std::vector<Vectorf<11>>; 
@@ -173,7 +177,6 @@ inline Eigen::Matrix3f skew(const Eigen::Vector3f& v){
     -v[1], v[0], 0;
   return S;
 }
-
 
 /** \typedef UnsignedCharImage
  * \brief An unsigned char cv::Mat.

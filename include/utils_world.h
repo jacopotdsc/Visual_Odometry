@@ -1,4 +1,7 @@
+#pragma once
 #include "defs.h"
+#include "camera.h"
+#include "PointCloud.h"
 
 /**
  * @brief Generates fake correspondences between two sets of 2D image points.
@@ -40,4 +43,4 @@ void generate_isometry3f(Eigen::Isometry3f& X);
 
 /**
 */
-std::pair<int, int> counter_equal(CorresponcesPairVector point_pairs);
+std::pair<int, int> counter_equal(PointCloud pc1, PointCloud pc2,  IntPairVector point_pairs);

@@ -26,60 +26,54 @@ std::string getOutputFileName(const std::string& file_path_1, const std::string&
 }
 
 /**********************************************************/
-
-// Utility for read from files
 PointCloud read_meas_file(const std::string& file_path) {
-    PointCloud point_cloud; // ContainerType points;
+    PointCloud points;
     std::ifstream input_stream(file_path);
-    std::string word;
     std::string line;
-    float value;
-
-    if (!input_stream.is_open()) {
-        std::cerr << "Error opening file: " << file_path << std::endl;
-        return point_cloud; 
+    if (!input_stream.is_open()){
+        std::cout << "[read_meas_file] Could not open " << file_path << ", exit" << std::endl;
+        exit(-1);
     }
 
-    // Skip first 3 lines ( Metadata line ) 
+    // Skip first three lines
     for (int i = 0; i < 3; i++)
         std::getline(input_stream, line);
-    
-    while (std::getline(input_stream, line)) {
 
-        if(line.empty())
+    while (std::getline(input_stream, line)) {
+        if (line.empty())
             continue;
 
         std::stringstream ss(line);
-        Point point_structure;
-        Vector11f pointData;
-        ss >> word; // point
 
-        ss >> value; // POINT_ID_CURRENT_MESUREMENT
-        pointData(0) = value;
+        std::string word_point;
+        float value;
+        Point point;
 
-        ss >> value; // ACTUAL_POINT_ID
-        point_structure.actual_point_id = static_cast<int>(value);
+        ss >> word_point;   // point 
 
-        // Take IMAGE_POINT
-        float x, y;
-        ss >> x >> y; //ss >> value;
-        point_structure.image_point = std::make_tuple(x, y);
+        ss >> value;    // POINT_ID_CURRENT_MEASUREMENT
+        point.local_point_id = static_cast<int>(value);
 
+        ss >> value;    // ACTUAL_POINT_ID
+        point.actual_point_id = static_cast<int>(value);
 
-        // Take APPEARANCE
-        for (int i = 1; i < 11; i++) {
-            ss >> value;
-            //pointData.appearance(i) = value;
-            pointData(i) = value;
+        ss >> value;    // IMAGE_POINT x
+        point.image_point(0) = value;
+
+        ss >> value;    // IMAGE_POINT y
+        point.image_point(1) = value;
+
+        for (int i = 0; i < 10; i++) {
+            ss >> value;    // APPEARANCE
+            point.appaerance(i) = value;
         }
 
-        point_structure.local_id_and_appaerance = pointData;
-        point_cloud.addPoint(point_structure);
-        
-        //points.push_back(pointData);
+        point.normalized_image_point = point.image_point;
+        points.addPoint(point);
     }
+
     input_stream.close();
-    return point_cloud; // points;
+    return points;
 }
 
 Camera read_camera_file(const std::string& file_path) {
@@ -91,22 +85,23 @@ Camera read_camera_file(const std::string& file_path) {
         return Camera();
     }
 
+    Eigen::Matrix3f camera_matrix;
     input_stream >> word; // "camera"
     input_stream >> word; // "matrix:"
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            //input_stream >> cam_params._camera_matrix(i, j);
-            input_stream >> word;
+            input_stream >> camera_matrix(i, j);
         }
     }
 
     // Read camera_transformation
+    Eigen::Isometry3f T_cam_robot;
     input_stream >> word; // "cam_transform:"
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            //input_stream >> cam_params.T_cam_robot(i, j);
+            input_stream >> T_cam_robot(i, j);
             //input_stream >> cam_params._world_in_camera_pose(i, j);
-            input_stream >> word;
+            //input_stream >> word;
         }
     }
 
@@ -127,23 +122,26 @@ Camera read_camera_file(const std::string& file_path) {
     input_stream >> rows; //cam_params._rows; //height;
 
     
-    Camera cam_params = Camera(rows, cols, z_near, z_far);
+    Camera cam_params = Camera(rows, cols, z_near, z_far, camera_matrix);
 
-    std::cout << "[read_camera_file] Set Isometry3f::Identity as WorldInCameraPose" << std::endl;
-    cam_params.setWorldInCameraPose(Eigen::Isometry3f::Identity());
+    //std::cout << "[read_camera_file] Set Isometry3f::Identity as WorldInCameraPose" << std::endl;
+    //cam_params.setWorldInCameraPose(Eigen::Isometry3f::Identity());
+    cam_params.setWorldInCameraPose(T_cam_robot);
 
     input_stream.close();
     return cam_params;
 }
 
-std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::string file_meas_prev, std::string file_meas_next){
+IntPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next){
     
     // Initializing name of files
     std::string file_to_write  = getOutputFileName(file_meas_prev, file_meas_next);
 
     // Reading measurement files
-    Vector11fVector meas_prev = read_meas_file(file_meas_prev).extractLocalIdAndAppearance();
-    Vector11fVector meas_next = read_meas_file(file_meas_next).extractLocalIdAndAppearance();
+    PointCloud pc_prev = read_meas_file(file_meas_prev);
+    PointCloud pc_next = read_meas_file(file_meas_next); 
+    Vector11fVector meas_prev = pc_prev.extractLocalIdAndAppearance();
+    Vector11fVector meas_next = pc_next.extractLocalIdAndAppearance();
     CorresponcesPairVector correspondences;
     IntPairVector int_correspondences;
 
@@ -158,7 +156,7 @@ std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::st
 
     for (const auto& query_point : meas_next) {
         Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 0.1f);
-        
+
         if (nearest_neighbor != nullptr) {
             for (int i = 0; i < 11; ++i) {
                 //output << (*nearest_neighbor)[i] << " "; 
@@ -172,15 +170,16 @@ std::pair<CorresponcesPairVector, IntPairVector> perform_correspondences(std::st
             
             Vector11f prev_point(*nearest_neighbor);
             Vector11f next_point(query_point);
-            correspondences.push_back(std::make_pair(prev_point, next_point));
+            //correspondences.push_back(std::make_pair(prev_point, next_point));
             int_correspondences.push_back(std::make_pair(prev_point[0], next_point[0]));
     
         } else {
-            //cout << "Nothing found for this query." << endl;
+            //std::cout << "Nothing found for this query." << std::endl;
         }
     }
 
-    return std::make_pair(correspondences, int_correspondences);
+    return int_correspondences;
+    //return std::make_pair(correspondences, int_correspondences);
 }
 
 Vector7fVector read_trajectory_file(const std::string& file_path) {
@@ -214,18 +213,39 @@ Vector7fVector read_trajectory_file(const std::string& file_path) {
     return trajectory_vector; 
 }
 
-void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points){
-    std::ofstream gt_file("gt_trajectory.csv");
-    gt_file << "x,y\n";
+void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points, std::string gt_file_name, std::string est_file_name){
+    std::ofstream gt_file(gt_file_name);
+    gt_file << "x,y,z\n";
     for (const auto& p : gt_points)
         gt_file << p.x() << "," << p.y() << "," << p.z() << "\n";
     gt_file.close();
 
-    std::ofstream est_file("estimated_trajectory.csv");
+    std::ofstream est_file(est_file_name);
     est_file << "x,y\n";
     for (const auto& p : estimated_points)
         est_file << p.x() << "," << p.y() << "," << p.z()  << "\n";
     est_file.close();
 
-    std::cout << "Curve trajectories saved to gt_trajectory.csv and estimated_trajectory.csv\n";
+    std::cout << "Curve trajectories saved to " << gt_file_name << " and " << est_file_name << std::endl;
+}
+
+IntPairVector perform_correspondences_world(const IntPairVector& correspondences_image,const IntPairVector& correspondences_world){
+    IntPairVector correspondences; 
+
+    for(size_t i=0; i<correspondences_image.size(); i++){
+        const int idx_ref=correspondences_image[i].first;   // ID reference point
+         
+        for(size_t j=0; j<correspondences_world.size(); j++){
+            const int idx_ref_world = correspondences_world[j].first; // ID reference point traingulated point
+
+            if( idx_ref_world == idx_ref){
+                correspondences.push_back(
+                    IntPair(correspondences_image[i].second,    // Id image current point
+                            correspondences_world[j].second)    // ID triangulated point
+                    );
+                break;
+            }
+        }
+    }
+    return correspondences;
 }

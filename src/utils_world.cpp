@@ -72,16 +72,19 @@ void generate_isometry3f(Eigen::Isometry3f& X){
     X.translation()=Eigen::Vector3f::NullaryExpr(3,1,[&](){return dis(gen);});
 }
 
-std::pair<int, int> counter_equal(CorresponcesPairVector point_pairs){
+std::pair<int, int> counter_equal(PointCloud pc1, PointCloud pc2,  IntPairVector point_pairs){
     int counter_equal = 0;
     int counter_different = 0;
     for (size_t i = 0; i < point_pairs.size(); i++) {
         const auto& tuple = point_pairs[i];
-        const auto& v1 = tuple.first;
-        const auto& v2 = tuple.second;
+        const auto& idx_v1 = tuple.first;
+        const auto& idx_v2 = tuple.second;
+
+        auto v1 = pc1.getPointWithId(idx_v1).appaerance;
+        auto v2 = pc2.getPointWithId(idx_v2).appaerance;
     
         bool equal = true;
-        for (int j = 1; j < 11; ++j) { 
+        for (int j = 0; j < 10; ++j) { 
             if (std::abs(v1[j] - v2[j]) > 0) {
                 equal = false;
                 counter_different += 1;
