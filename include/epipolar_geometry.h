@@ -36,3 +36,18 @@ Vector2fVector normalize_measurement(const Vector2fVector& p,Eigen::Matrix3f& T)
  */ 
 const Eigen::Isometry3f estimate_transform(const Camera& camera, const IntPairVector& correspondences, 
     const Vector2fVector& p1_img, const Vector2fVector& p2_img);
+
+/**
+ * @brief This function implement a pipeline to compute correspondence given two meas-xxxxx.dat files. It call compute_correspondences(....)
+ * @param file_meas_prev First meas-xxxxx.dat file
+ * @param file_meas_next Second meas-xxxxx.dat file ( ideally should be the next one of the file_meas_prev )
+ * @return A vector which contain std::tuple<.,.> representing the correspondences
+*/
+IntPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next );
+
+/**
+ * @param correspondences_image correspondences between reference image and current image
+ * @param correspondences_world corresponces between reference image and triangulated point
+ * @return  the correspondences (first: measurement, second: world_points );
+ */
+IntPairVector perform_correspondences_world(const IntPairVector& correspondences_image,const IntPairVector& correspondences_world);

@@ -1,5 +1,32 @@
 #include "epipolar_geometry.h"
 
+/***********************************************************/
+// Auxiliar functions usefull for other ones
+
+/**
+ * @param file_path_1, file_path_2 Path of meas-xxxxx.dat file 
+ * @return A string to have a file.txt name in function of meas-xxxxx.dat files
+ */
+std::string getOutputFileName(const std::string& file_path_1, const std::string& file_path_2) {
+    // Estrai i numeri dai percorsi dei file
+    std::regex rgx("meas-(\\d+).dat");
+    std::smatch match_1, match_2;
+
+    if (std::regex_search(file_path_1, match_1, rgx) && std::regex_search(file_path_2, match_2, rgx)) {
+        // Estrai i numeri dai match
+        std::string num1 = match_1[1];
+        std::string num2 = match_2[1];
+
+        // Crea il nome del file di output
+        return "meas-" + num1 + "-" + num2 + ".txt";
+    } else {
+        // Se non trovi il formato corretto nel percorso dei file
+        return "invalid_file_name";
+    }
+}
+
+/**********************************************************/
+
 int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X,
                        const IntPairVector& correspondences,
                        const Vector2fVector& p1_img, const Vector2fVector& p2_img,
@@ -36,32 +63,32 @@ int triangulate_points(const Eigen::Matrix3f& k, const Eigen::Isometry3f& X,
         int idx1 = corr.first;
         int idx2 = corr.second;
 
-        const Eigen::Vector2f& point_ref = p1_img[idx1];
+        const Eigen::Vector2f& point_prev = p1_img[idx1];
         const Eigen::Vector2f& point_curr = p2_img[idx2];
 
         // Preparing one point per image in cv version
-        cv::Mat point_ref_cv(2, 1, CV_64F);
+        cv::Mat point_prev_cv(2, 1, CV_64F);
         cv::Mat point_curr_cv(2, 1, CV_64F);
-        point_ref_cv.at<double>(0,0) = point_ref.x();
-        point_ref_cv.at<double>(1,0) = point_ref.y();
+        point_prev_cv.at<double>(0,0) = point_prev.x();
+        point_prev_cv.at<double>(1,0) = point_prev.y();
         point_curr_cv.at<double>(0,0) = point_curr.x();
         point_curr_cv.at<double>(1,0) = point_curr.y();
 
         // Triangulate the point
         cv::Mat point4D(4, 1, CV_64F);
-        cv::triangulatePoints(proj1, proj2, point_ref_cv, point_curr_cv, point4D);
+        cv::triangulatePoints(proj1, proj2, point_prev_cv, point_curr_cv, point4D);
 
-        // Convert from homogeneous coordinates: rom cv_pt = [x,y,z,w] to 3d_pt = [x, y, z]/w, w omogeneous scale
+        // Convert from homogeneous coordinates: from cv_pt = [x,y,z,w] to 3d_pt = [x, y, z]/w, w omogeneous scale
         double w = point4D.at<double>(3,0);
-        if (std::abs(w) > 1e-5) {
-            Eigen::Vector3f p;
-            p << point4D.at<double>(0,0) / w,
-                 point4D.at<double>(1,0) / w,
-                 point4D.at<double>(2,0) / w;
-            triangulated.push_back(p);
-            correspondences_new.emplace_back(idx2, n_success);
-            n_success++;
-        }
+
+        Eigen::Vector3f p;
+        p << point4D.at<double>(0,0) / w,
+                point4D.at<double>(1,0) / w,
+                point4D.at<double>(2,0) / w;
+        triangulated.push_back(p);
+        correspondences_new.emplace_back(idx2, n_success);
+        n_success++;
+    
     }
 
     return n_success;
@@ -172,9 +199,80 @@ const Eigen::Isometry3f estimate_transform(const Camera& camera, const IntPairVe
     const Vector2fVector& p1_img, const Vector2fVector& p2_img){
 
     Eigen::Matrix3f k = camera.cameraMatrix();
-    Eigen::Matrix3f F=estimate_fundamental(camera, correspondences,p1_img,p2_img);
-    Eigen::Matrix3f E=k.transpose()*F*k;    
-    const IsometryPair X12=decompose_matrix(E);
+    Eigen::Matrix3f F = estimate_fundamental(camera, correspondences,p1_img,p2_img);
+    Eigen::Matrix3f E = k.transpose()*F*k;    
+    const IsometryPair X12 = decompose_matrix(E);
 
     return std::get<0>(X12);
+}
+
+IntPairVector perform_correspondences(std::string file_meas_prev, std::string file_meas_next){
+    
+    // Initializing name of files
+    std::string file_to_write  = getOutputFileName(file_meas_prev, file_meas_next);
+
+    // Reading measurement files
+    PointCloud pc_prev = read_meas_file(file_meas_prev);
+    PointCloud pc_next = read_meas_file(file_meas_next); 
+    Vector11fVector meas_prev = pc_prev.extractLocalIdAndAppearance();
+    Vector11fVector meas_next = pc_next.extractLocalIdAndAppearance();
+    CorresponcesPairVector correspondences;
+    IntPairVector int_correspondences;
+
+    // opening file to write
+    //std::ofstream output(file_to_write, std::ios::out);
+    //if (!output.is_open()) {
+    //    std::cerr << "Errore apertura file: " << std::endl;
+    //}
+
+    // Initializing kdtree and seek for correspondences
+    TreeNodeType kd_tree(meas_prev.begin(), meas_prev.end(), 10);
+
+    for (const auto& query_point : meas_next) {
+        Vector11f* nearest_neighbor = kd_tree.fullSearchCustom(query_point, 0.1f);
+
+        if (nearest_neighbor != nullptr) {
+            for (int i = 0; i < 11; ++i) {
+                //output << (*nearest_neighbor)[i] << " "; 
+            }
+            //output << std::endl;  
+    
+            for (int i = 0; i < 11; ++i) {
+                //output << query_point[i] << " ";  
+            }
+            //output << std::endl << std::endl;  
+            
+            Vector11f prev_point(*nearest_neighbor);
+            Vector11f next_point(query_point);
+            //correspondences.push_back(std::make_pair(prev_point, next_point));
+            int_correspondences.push_back(std::make_pair(prev_point[0], next_point[0]));
+    
+        } else {
+            //std::cout << "Nothing found for this query." << std::endl;
+        }
+    }
+
+    return int_correspondences;
+    //return std::make_pair(correspondences, int_correspondences);
+}
+
+IntPairVector perform_correspondences_world(const IntPairVector& correspondences_image,const IntPairVector& correspondences_world){
+    IntPairVector correspondences; 
+
+    for(size_t i=0; i<correspondences_image.size(); i++){
+        const int idx_ref=correspondences_image[i].first;   // ID reference point
+         
+        for(size_t j=0; j<correspondences_world.size(); j++){
+            const int idx_ref_world = correspondences_world[j].first; // ID reference point traingulated point
+
+            if( idx_ref_world == idx_ref){
+                correspondences.push_back(
+                    IntPair(correspondences_image[i].second,    // Id image current point
+                            correspondences_world[j].second)    // ID triangulated point
+                    );
+                break;
+            }
+        }
+    }
+    return correspondences;
 }
