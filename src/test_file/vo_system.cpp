@@ -15,19 +15,18 @@ int main(int argc, char* argv[]) {
     IntPairVector correspondences_image = perform_correspondences("../data/meas-00000.dat", "../data/meas-00001.dat");
     
     // --------------------- ESTIMATING POSE ---------------------
-    PointCloud pc_ref  = read_meas_file("../data/meas-00000.dat");
+    PointCloud pc_prev = read_meas_file("../data/meas-00000.dat");
     PointCloud pc_curr = read_meas_file("../data/meas-00001.dat");
 
-    Vector10fVector appearances_prev = pc_ref.extractAppearance();
+    Vector10fVector appearances_prev = pc_prev.extractAppearance();
     Vector10fVector appearances_curr = pc_curr.extractAppearance();
-    Vector2fVector image_points_prev = pc_ref.extractImagePoints();
+    Vector2fVector image_points_prev = pc_prev.extractImagePoints();
     Vector2fVector image_points_curr = pc_curr.extractImagePoints();
 
     const Eigen::Isometry3f pose_init = estimate_transform( cam,
                                                             correspondences_image, 
                                                             image_points_prev, 
                                                             image_points_curr);
-
     // --------------------- TRIANGULATION ---------------------
     Vector3fVector world_points;
     IntPairVector correspondences_world;
@@ -44,7 +43,7 @@ int main(int argc, char* argv[]) {
 
     // --------------------- LOOP: Initialization ---------------------
     IsometryVector trajectory;
-    //trajectory.push_back(Eigen::Isometry3f::Identity()); // Frame 0
+    trajectory.push_back(Eigen::Isometry3f::Identity()); // Frame 0
     trajectory.push_back(pose_init); // Frame 1
     Eigen::Isometry3f pose_curr = pose_init;
     
@@ -52,7 +51,7 @@ int main(int argc, char* argv[]) {
     appearances_prev  = appearances_curr;
     
     // --------------------- LOOP: pose estimation ---------------------
-    for (int i = 2; i < TOTAL_MEAS; i++){
+    for (int i = 2; i <= TOTAL_MEAS; i++){
 
 
         //std::cout << pose_curr.translation().transpose() << std::endl;
@@ -68,14 +67,14 @@ int main(int argc, char* argv[]) {
         // Finding correspondences between measurements
         correspondences_image = perform_correspondences(path_ref.str(), path_curr.str());
 
-        // Finding correspondences with world points
+        // Finding correspondences world_pointswith world points
         image_points_curr = pc_curr.extractImagePoints(); 
         correspondences_world = perform_correspondences_world(correspondences_image,correspondences_world);
 
         // Transforming world point in the new reference frame ( reference_frame_prev )
         // It able me to set the camera pose to an indentity
         for(auto& p : world_points){
-            p = pose_curr * p;
+            p = pose_curr * p;          // c_p_w^i = c_T_w^(i-1) * c_p_w^(i-1) 
         }
 
         // Estimating pose with PICP
@@ -112,11 +111,27 @@ int main(int argc, char* argv[]) {
         gt_points.push_back(Eigen::Vector3f(row[4], row[5], row[6]));
     }
 
+
+/*
+    world_frame:             camera_frame:
+     
+         z                     y
+         ^                     ^
+         |                     |
+         |______> y            |______> x
+        /                     /
+       x                     z
+*/
+
+
+    Eigen::Isometry3f rf_camera_rotation = Eigen::Isometry3f::Identity();
+    rf_camera_rotation.linear() = Ry( -90 * 3.14159/180 ) * Rz( -90 * 3.14159/180 );
+
     Vector3fVector estimated_points;
     Eigen::Isometry3f pose_global = Eigen::Isometry3f::Identity();
     for (const auto& pose : trajectory) {  
-        pose_global = pose_global * pose;
-        estimated_points.push_back(pose_global.translation());
+       pose_global = pose_global * pose;
+        estimated_points.push_back(rf_camera_rotation * pose_global.translation());
     }
 
     write_trajectory_on_file(gt_points, estimated_points, "trajectory_gt.txt", "trajectory_complete.txt");
