@@ -124,3 +124,62 @@ Eigen::Vector3f evaluate_global_translation_variance(const IsometryVector& gt_gl
 
     return Eigen::Vector3f(var_x, var_y, var_z) / ( gt_global_poses.size() - 1); 
 }
+
+void print_evaluations(float translation_evaluation, float rotation_evaluation, 
+                       const Eigen::Vector3f& translation_component_wise_error, 
+                       const Eigen::Vector3f& translation_variance, 
+                       const IsometryVector& est_pose_glob, 
+                       const IsometryVector& gt_pose_glob,
+                       bool write_to_file, const std::string& filename) {
+    // If the flag is true, open the file
+    std::ofstream output_file;
+    if (write_to_file) {
+        output_file.open(filename);
+        if (!output_file) {
+            std::cerr << "Error opening file for writing." << std::endl;
+            return;
+        }
+    }
+
+    // Print to console and file
+    std::cout << "\n------- Evaluation README:" << std::endl;
+    std::cout << "Translation Evaluation: " << translation_evaluation << std::endl;
+    std::cout << "Rotation Evaluation: " << rotation_evaluation << std::endl;
+
+    if (write_to_file) {
+        output_file << "\n------- Evaluation README:" << std::endl;
+        output_file << "Translation Evaluation: " << translation_evaluation << std::endl;
+        output_file << "Rotation Evaluation: " << rotation_evaluation << std::endl;
+    }
+
+    // Mean section
+    std::cout << "\n------- Evaluation README Mean:" << std::endl;
+    std::cout << "Translation Evaluation Mean: " << translation_evaluation / est_pose_glob.size() << std::endl;
+    std::cout << "Rotation Evaluation Mean: " << rotation_evaluation / est_pose_glob.size() << std::endl;
+
+    if (write_to_file) {
+        output_file << "\n------- Evaluation README Mean:" << std::endl;
+        output_file << "Translation Evaluation Mean: " << translation_evaluation / est_pose_glob.size() << std::endl;
+        output_file << "Rotation Evaluation Mean: " << rotation_evaluation / est_pose_glob.size() << std::endl;
+    }
+
+    // Other Evaluation section
+    std::cout << "\n------- Other Evaluation:" << std::endl;
+    std::cout << "Translation Error: " << translation_component_wise_error.transpose() << std::endl;
+    std::cout << "Mean Translation Error: " << (translation_component_wise_error / gt_pose_glob.size()).transpose() << std::endl;
+    std::cout << "Translation Variance: " << translation_variance.transpose() << std::endl;
+
+    if (write_to_file) {
+        output_file << "\n------- Other Evaluation:" << std::endl;
+        output_file << "Translation Error: " << translation_component_wise_error.transpose() << std::endl;
+        output_file << "Mean Translation Error: " << (translation_component_wise_error / gt_pose_glob.size()).transpose() << std::endl;
+        output_file << "Translation Variance: " << translation_variance.transpose() << std::endl;
+    }
+
+    // Close the file if it was opened
+    if (write_to_file) {
+        std::cout << "\nEvaluation saved in: " << filename << std::endl;
+        output_file.close();
+    }
+}
+

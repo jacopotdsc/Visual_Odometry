@@ -135,25 +135,15 @@ int main(int argc, char* argv[]) {
     IsometryVector gt_pose_rel;
     glob2Rel(gt_pose_glob, gt_pose_rel);
 
+    
     // Evaluation estimated poses
     float translation_evaluation = evaluate_relative_translation(gt_pose_rel, est_pose_rel);
     float rotation_evaluation = evaluate_relative_rotation(gt_pose_rel, est_pose_rel);
     Eigen::Vector3f translation_component_wise_error = evaluate_global_translation_error(gt_pose_glob, est_pose_glob);
     Eigen::Vector3f translation_variance = evaluate_global_translation_variance(gt_pose_glob, est_pose_glob, translation_component_wise_error);
 
-    std::cout << "\n------- Evaluation README:" << std::endl;
-    std::cout << "Translation Evaluation: " << translation_evaluation << std::endl;
-    std::cout << "Rotation Evaluation: " << rotation_evaluation << std::endl;
-
-    std::cout << "\n------- Evaluation README Mean:" << std::endl;
-    std::cout << "Translation Evaluation Mean: " << translation_evaluation / est_pose_glob.size() << std::endl;
-    std::cout << "Rotation Evaluation Mean: " << rotation_evaluation / est_pose_glob.size() << std::endl;
-
-    std::cout << "\n------- Other Evaluation:" << std::endl;
-    std::cout << "Translation Error: " << translation_component_wise_error.transpose() << std::endl;
-    std::cout << "Mean Translation Error: " << (translation_component_wise_error / gt_pose_glob.size()).transpose() << std::endl;
-    std::cout << "Translation Variance: " << translation_variance.transpose() << std::endl;
-
+    print_evaluations(translation_evaluation, rotation_evaluation, translation_component_wise_error, 
+        translation_variance, est_pose_glob, gt_pose_glob, true, "evaluation.txt");
 
 }
 

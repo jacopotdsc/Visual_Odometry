@@ -44,3 +44,12 @@ Eigen::Vector3f evaluate_global_translation_error(const IsometryVector& gt_globa
  */
 Eigen::Vector3f evaluate_global_translation_variance(const IsometryVector& gt_global_poses, const IsometryVector& est_global_poses, const Eigen::Vector3f& mean_translation_error);
     
+/**
+ * @brief print evaluation
+ */
+void print_evaluations(float translation_evaluation, float rotation_evaluation, 
+    const Eigen::Vector3f& translation_component_wise_error, 
+    const Eigen::Vector3f& translation_variance, 
+    const IsometryVector& est_pose_glob, 
+    const IsometryVector& gt_pose_glob,
+    bool write_to_file, const std::string& filename = "");
