@@ -26,9 +26,10 @@ int main (int argc, char** argv) {
     Vector2fVector current_image_points = image_points_1; // serve dopo per il solver
 
     // --------------------- CORRISPONDENZE ---------------------
-    auto result = perform_correspondences(file_path_meas_0, file_path_meas_1);
-    CorresponcesPairVector point_pairs = result.first;
-    IntPairVector index_pairs = result.second;
+    //auto result = perform_correspondences(file_path_meas_0, file_path_meas_1);
+    //CorresponcesPairVector point_pairs = result.first;
+    //IntPairVector index_pairs = result.second;
+    IntPairVector index_pairs = perform_correspondences(file_path_meas_0, file_path_meas_1);
 
     std::cout << "[INFO] Corrispondenze trovate: " << index_pairs.size() << "\n";
 

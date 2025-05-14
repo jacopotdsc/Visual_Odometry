@@ -43,9 +43,9 @@ int main(int argc, char* argv[]) {
     solver.setKernelThreshold(10000);
 
     // --------------------- LOOP: Initialization ---------------------
-    IsometryVector trajectory;
-    trajectory.push_back(Eigen::Isometry3f::Identity()); // Frame 0
-    trajectory.push_back(pose_init); // Frame 1
+    IsometryVector est_pose_rel;
+    est_pose_rel.push_back(Eigen::Isometry3f::Identity()); // Frame 0
+    est_pose_rel.push_back(pose_init); // Frame 1
     Eigen::Isometry3f pose_curr = pose_init;
     
     image_points_prev = image_points_curr;
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
         // Refreshing: saving data
         cam = solver.camera();
         pose_curr = cam.worldInCameraPose();
-        trajectory.push_back(pose_curr);
+        est_pose_rel.push_back(pose_curr);
 
         // Refreshing: Triangulating points
         triangulate_points( cam.cameraMatrix(),
@@ -105,21 +105,55 @@ int main(int argc, char* argv[]) {
     }
 
     // --------------------- SAVING DATA ---------------------
-    Vector7fVector gt_trajectory_full = read_trajectory_file("../data/trajectory.dat");
+    Vector7fVector gt_file = read_trajectory_file("../data/trajectory.dat");
 
-    Vector3fVector gt_points;
-    for (const auto& row : gt_trajectory_full) {
-        gt_points.push_back(Eigen::Vector3f(row[4], row[5], row[6]));
+    Vector3fVector gt_point_glob;
+    for (const auto& row : gt_file) {
+        gt_point_glob.push_back(Eigen::Vector3f(row[4], row[5], row[6]));
     }
 
-    IsometryVector estimated_poses;
-    rel2Glob(trajectory, estimated_poses);
+    IsometryVector est_pose_glob;
+    rel2Glob(est_pose_rel, est_pose_glob);
 
-    Vector3fVector estimated_points;
-    for(const auto& pose: estimated_poses){
-        estimated_points.push_back(pose.translation());
+    Vector3fVector est_point_glob;
+    for(const auto& pose: est_pose_glob){
+        est_point_glob.push_back(pose.translation());
     }
 
-    write_trajectory_on_file(gt_points, estimated_points, "trajectory_gt.txt", "trajectory_complete.txt");
+    write_trajectory_on_file(gt_point_glob, est_point_glob, "trajectory_gt.txt", "trajectory_complete.txt");
+
+    // --------------------- EVALUATION ---------------------
+    // Augmenting groundthruth to SE(3)
+    IsometryVector gt_pose_glob;
+    for (const auto& point : gt_point_glob) {
+        Eigen::Isometry3f gt_iso = Eigen::Isometry3f::Identity();
+        gt_iso.translation() = point;
+        gt_pose_glob.push_back(gt_iso);
+    }
+
+    // Converting groundthruth with relative poses
+    IsometryVector gt_pose_rel;
+    glob2Rel(gt_pose_glob, gt_pose_rel);
+
+    // Evaluation estimated poses
+    float translation_evaluation = evaluate_relative_translation(gt_pose_rel, est_pose_rel);
+    float rotation_evaluation = evaluate_relative_rotation(gt_pose_rel, est_pose_rel);
+    Eigen::Vector3f translation_component_wise_error = evaluate_global_translation_error(gt_pose_glob, est_pose_glob);
+    Eigen::Vector3f translation_variance = evaluate_global_translation_variance(gt_pose_glob, est_pose_glob, translation_component_wise_error);
+
+    std::cout << "\n------- Evaluation README:" << std::endl;
+    std::cout << "Translation Evaluation: " << translation_evaluation << std::endl;
+    std::cout << "Rotation Evaluation: " << rotation_evaluation << std::endl;
+
+    std::cout << "\n------- Evaluation README Mean:" << std::endl;
+    std::cout << "Translation Evaluation Mean: " << translation_evaluation / est_pose_glob.size() << std::endl;
+    std::cout << "Rotation Evaluation Mean: " << rotation_evaluation / est_pose_glob.size() << std::endl;
+
+    std::cout << "\n------- Other Evaluation:" << std::endl;
+    std::cout << "Translation Error: " << translation_component_wise_error.transpose() << std::endl;
+    std::cout << "Mean Translation Error: " << (translation_component_wise_error / gt_pose_glob.size()).transpose() << std::endl;
+    std::cout << "Translation Variance: " << translation_variance.transpose() << std::endl;
+
+
 }
 
