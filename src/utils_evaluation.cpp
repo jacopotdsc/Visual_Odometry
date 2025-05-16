@@ -8,21 +8,33 @@ void rel2Glob(IsometryVector& relative_poses, IsometryVector& global_poses){
     /*
     world_frame:             camera_frame:
      
-         z                     y
-         ^                     ^
-         |                     |
-         |______> y            |______> x
-        /                     /
-       x                     z
+         z                       
+         ^                        
+         |                        
+         |______> y     x <_______
+        /                        / |
+       x                        z   y
+
+    w_R_c: Ry(-90°)*Rz(90°) Euler angles
     */
 
     Eigen::Isometry3f rf_camera_rotation = Eigen::Isometry3f::Identity();
-    rf_camera_rotation.linear() = Ry( -90 * 3.14159/180 ) * Rz( -90 * 3.14159/180 );
+    rf_camera_rotation.linear() = Ry( 90 * 3.14159/180 ) * Rz( -90 * 3.14159/180 );
 
     Eigen::Isometry3f pose_global = Eigen::Isometry3f::Identity();
-    for (const auto& pose : relative_poses) {  
-        pose_global = pose_global * pose;
-        global_poses.push_back(rf_camera_rotation * pose_global);
+    for (const auto& pose : relative_poses) { 
+
+        std::cout << "-------------------\n";
+        std::cout << "pose_rel: \t\t" << pose.translation().transpose() << std::endl;
+        std::cout << "pose_glob:\t\t" << pose_global.translation().transpose() << std::endl;
+        
+        pose_global = pose_global * pose.inverse();
+        auto computed_global_pose = rf_camera_rotation * pose_global;
+
+        std::cout << "update pose_glob : \t" << pose_global.translation().transpose() << std::endl;
+        std::cout << "rotated pose_glob: \t" << computed_global_pose.translation().transpose() << std::endl;
+
+        global_poses.push_back(computed_global_pose);
     }
 }
 

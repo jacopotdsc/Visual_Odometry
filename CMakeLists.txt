@@ -138,6 +138,18 @@ add_executable(
     ${SRC_DIR}/utils_evaluation.cpp
 )
 
+add_executable(
+    vo_system_evaluation_map
+    ${TEST_DIR}/vo_system_evaluation_map.cpp
+    ${SRC_DIR}/utils_file.cpp
+    ${SRC_DIR}/epipolar_geometry.cpp
+    ${SRC_DIR}/camera.cpp
+    ${SRC_DIR}/picp_solver.cpp
+    ${SRC_DIR}/utils_world.cpp
+    ${SRC_DIR}/utils_evaluation.cpp
+    ${SRC_DIR}/utils_map.cpp
+)
+
 # Linka le librerie OpenCV
 find_package(OpenCV REQUIRED core)
 link_libraries(${OpenCV_LIBS})
@@ -154,6 +166,7 @@ link_libraries(${OpenCV_LIBS})
 #target_include_directories(vo_system_fake PRIVATE ${GDAL_INCLUDE_DIRS})
 target_include_directories(vo_system PRIVATE ${GDAL_INCLUDE_DIRS})
 target_include_directories(vo_system_evaluation PRIVATE ${GDAL_INCLUDE_DIRS})
+target_include_directories(vo_system_evaluation_map PRIVATE ${GDAL_INCLUDE_DIRS})
 
 
 # Linka le librerie necessarie per ciascun target
@@ -168,6 +181,7 @@ target_include_directories(vo_system_evaluation PRIVATE ${GDAL_INCLUDE_DIRS})
 #target_link_libraries(vo_system_fake Eigen3::Eigen ${OpenCV_LIBS} opencv_core ${GDAL_LIBRARIES})
 target_link_libraries(vo_system Eigen3::Eigen ${OpenCV_LIBS} opencv_core ${GDAL_LIBRARIES})
 target_link_libraries(vo_system_evaluation Eigen3::Eigen ${OpenCV_LIBS} opencv_core ${GDAL_LIBRARIES})
+target_link_libraries(vo_system_evaluation_map Eigen3::Eigen ${OpenCV_LIBS} opencv_core ${GDAL_LIBRARIES})
 
 
 # Aggiungi il link alle librerie FLANN (se necessario)

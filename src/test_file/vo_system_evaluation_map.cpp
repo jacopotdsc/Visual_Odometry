@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     appearances_prev  = appearances_curr;
 
     Eigen::Isometry3f rf_camera_rotation = Eigen::Isometry3f::Identity();
-    rf_camera_rotation.linear() = Ry( 90 * 3.14159/180 ) * Rz( 90 * 3.14159/180 );
+    rf_camera_rotation.linear() = Ry( 90 * 3.14159/180 ) * Rz( -90 * 3.14159/180 );
 
     Vector3fVector world_cloud_glob;
     CustomVector<Vector3fVector> vector_world_glob;
@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
     //for(const auto wp : vector_world_glob[0])
     //    std::cout << wp.transpose() << std::endl;
 
-    std::cout << vector_world_rel[0][0].transpose() << std::endl;
+    std::cout << vector_world_rel [0][0].transpose() << std::endl;
     std::cout << vector_world_glob[0][0].transpose() << std::endl;
 
 }

@@ -137,6 +137,38 @@ Vector7fVector read_trajectory_file(const std::string& file_path) {
     return trajectory_vector; 
 }
 
+Vector14fVector read_world_file(const std::string& file_path) {
+    Vector14fVector world_vector; ;
+    std::ifstream input_stream(file_path);
+    std::string word;
+    std::string line;
+    float value;
+
+    if (!input_stream.is_open()) {
+        std::cerr << "Error opening file: " << file_path << std::endl;
+        return world_vector; 
+    }
+
+    while (std::getline(input_stream, line)) {
+
+        if(line.empty())
+            continue;
+
+        std::stringstream ss(line);
+        Vector14f world_point;
+
+        for (int i = 0; i < 14; i++) {
+            ss >> value;
+            world_point(i) = value;
+        }
+
+        world_vector.push_back(world_point);
+        
+    }
+    input_stream.close();
+    return world_vector; 
+}
+
 void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points, std::string gt_file_name, std::string est_file_name){
     std::ofstream gt_file(gt_file_name);
     gt_file << "x,y,z\n";

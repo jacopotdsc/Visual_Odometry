@@ -5,15 +5,18 @@ void rel2Glob(CustomVector<Vector3fVector>& vector_world_rel, IsometryVector& es
     assert(vector_world_points.size() == est_pose_rel.size()-1);
     
     Vector3fVector current_world_glob;
+    
     /*
     world_frame:             camera_frame:
      
-         z                     y
-         ^                     ^
-         |                     |
-         |______> y            |______> x
-        /                     /
-       x                     z
+         z                       
+         ^                        
+         |                        
+         |______> y     x <_______
+        /                        / |
+       x                        z   y
+
+    w_R_c: Ry(-90°)*Rz(90°) Euler angles
     */
 
     Eigen::Isometry3f rf_camera_rotation = Eigen::Isometry3f::Identity();

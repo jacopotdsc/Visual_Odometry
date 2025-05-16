@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
                                                             correspondences_image, 
                                                             image_points_prev, 
                                                             image_points_curr);
+
+    std::cout << pose_init.translation().transpose() << std::endl;
     // --------------------- TRIANGULATION ---------------------
     Vector3fVector world_points;
     IntPairVector correspondences_world;
