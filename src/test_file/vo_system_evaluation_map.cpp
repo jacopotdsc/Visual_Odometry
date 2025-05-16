@@ -62,14 +62,8 @@ int main(int argc, char* argv[]) {
     Eigen::Isometry3f rf_camera_rotation = Eigen::Isometry3f::Identity();
     rf_camera_rotation.linear() = Ry( 90 * 3.14159/180 ) * Rz( -90 * 3.14159/180 );
 
-    Vector3fVector world_cloud_glob;
-    CustomVector<Vector3fVector> vector_world_glob;
-    
     // --------------------- LOOP: pose estimation ---------------------
     for (int i = 2; i <= TOTAL_MEAS; i++){
-        world_cloud_glob.clear();
-
-        //std::cout << pose_curr.translation().transpose() << std::endl;
 
         // Reading next measurement
         std::ostringstream path_ref, path_curr;
@@ -168,25 +162,10 @@ int main(int argc, char* argv[]) {
     // --------------------- MAP EVALUATION ---------------------
     Vector14fVector world_file = read_world_file("../data/world.dat");
 
-    //CustomVector<Vector3fVector> vector_world_glob;
-    //rel2Glob(vector_world_rel, est_pose_glob, vector_world_glob);
+    CustomVector<Vector3fVector> vector_world_glob;
+    rel2Glob(vector_world_rel, est_pose_rel, vector_world_glob);
 
-    std::cout << rf_camera_rotation.linear() << std::endl;
-    for( const auto& world_cloud_rel : vector_world_rel){
-        
-        world_cloud_glob.clear();
-
-        for( const auto& world_point_rel : world_cloud_rel){
-            world_cloud_glob.push_back( rf_camera_rotation * world_point_rel );
-        }
-
-        vector_world_glob.push_back( world_cloud_glob );
-    }
-
-    //for(const auto wp : vector_world_glob[0])
-    //    std::cout << wp.transpose() << std::endl;
-
-    std::cout << vector_world_rel [0][0].transpose() << std::endl;
-    std::cout << vector_world_glob[0][0].transpose() << std::endl;
+    std::cout << vector_world_rel[0][65].transpose() << std::endl;
+    std::cout << vector_world_glob[0][65].transpose() << std::endl;
 
 }

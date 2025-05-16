@@ -23,17 +23,9 @@ void rel2Glob(IsometryVector& relative_poses, IsometryVector& global_poses){
 
     Eigen::Isometry3f pose_global = Eigen::Isometry3f::Identity();
     for (const auto& pose : relative_poses) { 
-
-        std::cout << "-------------------\n";
-        std::cout << "pose_rel: \t\t" << pose.translation().transpose() << std::endl;
-        std::cout << "pose_glob:\t\t" << pose_global.translation().transpose() << std::endl;
         
         pose_global = pose_global * pose.inverse();
         auto computed_global_pose = rf_camera_rotation * pose_global;
-
-        std::cout << "update pose_glob : \t" << pose_global.translation().transpose() << std::endl;
-        std::cout << "rotated pose_glob: \t" << computed_global_pose.translation().transpose() << std::endl;
-
         global_poses.push_back(computed_global_pose);
     }
 }
