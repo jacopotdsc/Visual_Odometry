@@ -21,6 +21,13 @@ Camera read_camera_file(const std::string& file_path);
 */
 Vector7fVector read_trajectory_file(const std::string& file_path);
 
+
+/**
+ * @param file_path Path to a world.dat file
+ * @return Vector containing information of world.dat
+*/
+Vector14fVector read_world_file(const std::string& file_path);
+
 /**
  * @brief write on file ground thruth point and estimated onees
  */

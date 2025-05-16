@@ -19,7 +19,7 @@ def load_file(filename):
             if parsed_header == False:
                 parsed_header = True
                 continue
-            # Usa regex per separare su spazi multipli, tab o virgole
+            
             if len(parts) >= 3:
                 data.append([float(p) for p in parts[:3]])
         return np.array(data)
@@ -45,6 +45,7 @@ def plot_trajectories(gt_file='gt_trajectory.csv', est_file='estimated_trajector
     ax.legend()
     ax.grid(True)
     plt.tight_layout()
+    plt.savefig("plot_trajectories.png")
     plt.show()
 
 if __name__ == "__main__":

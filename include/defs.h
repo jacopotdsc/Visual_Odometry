@@ -43,6 +43,10 @@ typedef Eigen::Matrix<float, 7, 1> Vector7f;
 typedef std::vector<Vector7f, Eigen::aligned_allocator<Vector7f> > Vector7fVector;
 typedef std::pair<Eigen::Isometry3f,Eigen::Isometry3f> IsometryPair;
 
+
+typedef Eigen::Matrix<float, 14, 1> Vector14f;
+typedef std::vector<Vector14f, Eigen::aligned_allocator<Vector14f> > Vector14fVector;
+
 typedef std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f> > Vector4fVector;
 typedef std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > Vector3fVector;
 typedef std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f> > Vector2fVector;
@@ -51,6 +55,9 @@ typedef std::vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f> >
 typedef std::vector<Eigen::Matrix2f, Eigen::aligned_allocator<Eigen::Matrix2f> > Matrix2fVector;
 
 typedef std::vector<Eigen::Isometry3f, Eigen::aligned_allocator<Eigen::Isometry3f> > IsometryVector;
+
+template <typename VectorType>
+using CustomVector = std::vector<VectorType, Eigen::aligned_allocator<VectorType>>;
 
 typedef Eigen::Matrix<float, 2, 3> Matrix2_3f;
 typedef Eigen::Matrix<float, 4, 6> Matrix4_6f;
