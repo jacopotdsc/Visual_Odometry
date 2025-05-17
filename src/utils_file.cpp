@@ -185,3 +185,118 @@ void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated
     std::cout << "Curve trajectories saved to " << gt_file_name << " and " << est_file_name << std::endl;
 }
 
+void write_world_on_file(   CustomVector<Vector3fVector> vector_world_glob, 
+                            CustomVector<Vector10fVector> vector_world_appearances, 
+                            const std::string& filename){
+
+    std::ofstream file(filename ); 
+
+    if (!file.is_open()) {
+        std::cerr << "[ERROR] Can't open " << filename << ".txt\n";
+        return;
+    }
+
+    assert( vector_world_glob.size() == vector_world_appearances );
+
+    // Iteration all over vector of each measurement
+    for( size_t idx_meas=0; idx_meas < vector_world_appearances.size(); idx_meas++){
+        
+        Vector3fVector vector_world_curr = vector_world_glob[idx_meas];
+        Vector10fVector vector_appearances = vector_world_appearances[idx_meas];
+
+        assert( vector_world_curr.size() == vector_appearances.size() );
+
+        // ITeration over the measurement
+        for( size_t idx_point=0; idx_point < vector_world_curr.size(); idx_point++){
+            
+            Eigen::Vector3f world_point_curr = vector_world_curr[idx_point];
+            Vector10f appearance_point_curr = vector_appearances[idx_point];
+
+            // Writing coordinate
+            for( const auto& coord: world_point_curr){
+                file << coord  << " "; 
+            }
+
+            // Writing appearances
+            for( const auto& app : appearance_point_curr){
+                file << app << " ";
+            }
+            file << "\n";
+
+        }
+        
+    }
+
+    file.close();
+    std::cout << "Writting world points in " << filename << std::endl;
+}
+
+std::string join_appearance(const std::vector<std::string>& tokens, size_t start_index) {
+    std::ostringstream oss;
+    for (size_t i = start_index; i < tokens.size(); ++i) {
+        if (i > start_index) oss << " ";
+        oss << tokens[i];
+    }
+    return oss.str();
+}
+
+std::vector<std::string> split_line(const std::string& line) {
+    std::istringstream iss(line);
+    std::vector<std::string> tokens;
+    std::string tok;
+    while (iss >> tok) {
+        tokens.push_back(tok);
+    }
+    return tokens;
+}
+
+void match_appearance_and_write(const std::string& file1_path, const std::string& file2_path, const std::string& filename) {
+    std::ifstream file1(file1_path);
+    std::ifstream file2(file2_path);
+    std::ofstream result(filename);
+
+    if (!file1.is_open() || !file2.is_open()) {
+        std::cerr << "Errore apertura file.\n";
+        return;
+    }
+
+    // Mappa: appearance → landmark_id
+    std::unordered_map<std::string, std::string> appearance_to_landmark;
+
+    // Leggi il file 1
+    std::string line;
+    while (std::getline(file1, line)) {
+        auto tokens = split_line(line);
+        if (tokens.size() < 5) continue; // invalid line
+        std::string landmark_id = tokens[0];
+        std::string appearance = join_appearance(tokens, 4);
+        appearance_to_landmark[appearance] = landmark_id;
+    }
+
+    // Set per evitare duplicati
+    std::unordered_set<std::string> used_landmarks;
+
+    // Leggi il file 2
+    while (std::getline(file2, line)) {
+        auto tokens = split_line(line);
+        if (tokens.size() < 4) continue;
+        std::string position = tokens[0] + " " + tokens[1] + " " + tokens[2];
+        std::string appearance = join_appearance(tokens, 3);
+
+        auto it = appearance_to_landmark.find(appearance);
+        if (it != appearance_to_landmark.end()) {
+            const std::string& landmark_id = it->second;
+            if (used_landmarks.find(landmark_id) == used_landmarks.end()) {
+                result << landmark_id << " " << position << " " << appearance << "\n";
+                used_landmarks.insert(landmark_id);
+            }
+        }
+    }
+
+    file1.close();
+    file2.close();
+    result.close();
+
+
+    std::cout << "Map written in " << filename << std::endl;
+}

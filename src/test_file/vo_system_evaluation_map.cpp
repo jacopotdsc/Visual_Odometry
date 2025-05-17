@@ -13,6 +13,13 @@ int main(int argc, char* argv[]) {
     Camera cam = read_camera_file("../data/camera.dat");
     cam.setWorldInCameraPose(Eigen::Isometry3f::Identity());
 
+
+    // --------------------- INIT SOME VARIABLES ---------------------
+    Vector3fVector world_points;
+    CustomVector<Vector3fVector> vector_world_rel;
+    CustomVector<IntPairVector> vector_world_correspondences;
+    CustomVector<Vector10fVector> vector_world_appearances;
+
     // --------------------- CORRESPONDENCES ---------------------
     IntPairVector correspondences_image = perform_correspondences("../data/meas-00000.dat", "../data/meas-00001.dat");
     
@@ -25,14 +32,14 @@ int main(int argc, char* argv[]) {
     Vector2fVector image_points_prev = pc_prev.extractImagePoints();
     Vector2fVector image_points_curr = pc_curr.extractImagePoints();
 
+    vector_world_correspondences.push_back(correspondences_image);
+    vector_world_appearances.push_back(appearances_curr);
+
     const Eigen::Isometry3f pose_init = estimate_transform( cam,
                                                             correspondences_image, 
                                                             image_points_prev, 
                                                             image_points_curr);
     // --------------------- TRIANGULATION ---------------------
-    Vector3fVector world_points;
-    CustomVector<Vector3fVector> vector_world_rel;
-    CustomVector<IntPairVector> vector_world_correspondences;
 
     IntPairVector correspondences_world;
     triangulate_points( cam.cameraMatrix(), pose_init,
@@ -76,17 +83,18 @@ int main(int argc, char* argv[]) {
         // Finding correspondences between measurements
         correspondences_image = perform_correspondences(path_ref.str(), path_curr.str());
 
+        vector_world_correspondences.push_back(correspondences_image);
+        vector_world_appearances.push_back(appearances_curr);
+
         // Finding correspondences world_pointswith world points
         image_points_curr = pc_curr.extractImagePoints(); 
         correspondences_world = perform_correspondences_world(correspondences_image,correspondences_world);
 
         // Transforming world point in the new reference frame ( reference_frame_prev )
         // It able me to set the camera pose to an indentity
-
         for(auto& p : world_points){
             p = pose_curr * p;          // c_p_w^i = c_T_w^(i-1) * c_p_w^(i-1) 
         }
-
 
         // Estimating pose with PICP
         cam.setWorldInCameraPose(Eigen::Isometry3f::Identity());
@@ -165,7 +173,17 @@ int main(int argc, char* argv[]) {
     CustomVector<Vector3fVector> vector_world_glob;
     rel2Glob(vector_world_rel, est_pose_rel, vector_world_glob);
 
-    std::cout << vector_world_rel[0][65].transpose() << std::endl;
-    std::cout << vector_world_glob[0][65].transpose() << std::endl;
+    write_world_on_file(vector_world_glob, vector_world_appearances, "world.txt");
+    match_appearance_and_write("../data/world.dat", "world.txt", "result_map.txt");
+    
+    Eigen::Vector2f map_rmse = evaluate_map_rmse("../data/world.dat", "result_map.txt");
+    int matched_points = map_rmse[1];
+    Eigen::Vector3f map_error = evaluate_map_cumulative_error("../data/world.dat", "result_map.txt", matched_points); 
+
+
+    std::cout << "\n RMSE: " << map_rmse[0] << ", matched point: " << map_rmse[1] << std::endl;
+    std::cout << "Map cumulative error: " << map_error[0] << ", matched point: " << map_error[1] << std::endl;
+    std::cout << "Mean error (x, y, z): " << map_error[0] / matched_points << ", " << map_error[1] / matched_points << ", " << map_error[2] / matched_points << std::endl;
+
 
 }

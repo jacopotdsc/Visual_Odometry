@@ -24,3 +24,24 @@
  * @param vector_world_glob_w_T_pw: CustomVector to store the transformed 3D points in the global reference frame.
  */
 void rel2Glob(CustomVector<Vector3fVector>& vector_world_rel, IsometryVector& est_pose_glob, CustomVector<Vector3fVector>& vector_world_glob);
+
+/**
+ * @param filename Path to the file containing landmark data.
+ * @return Vector of 3D positions (x, y, z) parsed from file.
+ */
+Vector4fVector load_positions(const std::string& filename);
+
+/**
+ * @param gt_file  Path to ground truth file (.dat).
+ * @param est_file Path to estimated file (.txt).
+ * @return RMSE between ground truth and estimated 3D positions.
+ */
+Eigen::Vector2f evaluate_map_rmse(const std::string& gt_file, const std::string& est_file);
+
+
+/**
+ * @param gt_file  Path to ground truth file (.dat).
+ * @param est_file Path to estimated file (.txt).
+ * @return Vector4f: [cumulative_dx, cumulative_dy, cumulative_dz, matched_count]
+*/
+Eigen::Vector3f evaluate_map_cumulative_error(const std::string& gt_file, const std::string& est_file, int matched_point);

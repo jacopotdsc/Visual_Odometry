@@ -37,3 +37,102 @@ void rel2Glob(CustomVector<Vector3fVector>& vector_world_rel, IsometryVector& es
         vector_world_glob.push_back( current_world_glob );
     }
 }
+
+Vector4fVector load_positions(const std::string& filename) {
+    std::ifstream file(filename);
+    Vector4fVector positions;
+
+    if (!file.is_open()) {
+        std::cerr << "Errore apertura file: " << filename << "\n";
+        return positions;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string id_str;
+        float id, x, y, z;
+        iss >> id_str >> x >> y >> z;
+
+        try {
+            id = std::stof(id_str);
+        } catch (...) {
+            continue;
+        }
+
+        if (iss.fail()) continue;
+        positions.push_back({id, x, y, z});
+    }
+
+    return positions;
+}
+
+Eigen::Vector2f evaluate_map_rmse(const std::string& gt_file, const std::string& est_file) {
+    Vector4fVector gt_positions = load_positions(gt_file);
+    Vector4fVector est_positions = load_positions(est_file);
+
+    if (gt_positions.empty() || est_positions.empty()) {
+        std::cerr << "[ERROR] Empty file\n";
+        return Eigen::Vector2f(-1.0, -1.0);
+    }
+
+    float sum_squared_error = 0.0f;
+    int matched_points = 0;
+
+    for (const auto& est : est_positions) {
+        float est_id = est[0];
+        for (const auto& gt : gt_positions) {
+            if (gt[0] == est_id) {
+                float dx = gt[1] - est[1];
+                float dy = gt[2] - est[2];
+                float dz = gt[3] - est[3];
+                sum_squared_error += dx * dx + dy * dy + dz * dz;
+                ++matched_points;
+                break;
+            }
+        }
+    }
+
+    if (matched_points == 0) {
+        std::cerr << "[ERROR] No landarmk matching\n";
+        return Eigen::Vector2f(-1.0, -1.0);
+    }
+
+    float mse = sum_squared_error / matched_points;
+    return Eigen::Vector2f(std::sqrt(mse), matched_points);
+}
+
+Eigen::Vector3f evaluate_map_cumulative_error(const std::string& gt_file, const std::string& est_file, int matched_points) {
+    Vector4fVector gt_positions = load_positions(gt_file);
+    Vector4fVector est_positions = load_positions(est_file);
+
+    if (gt_positions.empty() || est_positions.empty()) {
+        std::cerr << "[ERROR] Empty file\n";
+        return Eigen::Vector3f(-1.0f, -1.0f, -1.0f);
+    }
+
+    float sum_dx = 0.0f, sum_dy = 0.0f, sum_dz = 0.0f;
+
+    for (const auto& est : est_positions) {
+        float est_id = est[0];
+        for (const auto& gt : gt_positions) {
+            if (gt[0] == est_id) {
+                float dx = std::abs(gt[1] - est[1]);
+                float dy = std::abs(gt[2] - est[2]);
+                float dz = std::abs(gt[3] - est[3]);
+                sum_dx += dx;
+                sum_dy += dy;
+                sum_dz += dz;
+                break;
+            }
+        }
+    }
+
+    if (matched_points == 0) {
+        std::cerr << "[ERROR] No landmark matching\n";
+        return Eigen::Vector3f(-1.0f, -1.0f, -1.0f);
+    }
+
+    return Eigen::Vector3f(sum_dx, sum_dy, sum_dz);
+}
+

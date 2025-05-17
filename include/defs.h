@@ -20,6 +20,9 @@
 #include <regex>
 #include <unistd.h>
 
+#include <unordered_map>
+#include <unordered_set>
+
 #include <opencv2/opencv.hpp>
 #include "opencv2/opencv.hpp"
 
