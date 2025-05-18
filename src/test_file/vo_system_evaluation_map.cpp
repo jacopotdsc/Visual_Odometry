@@ -181,9 +181,19 @@ int main(int argc, char* argv[]) {
     Eigen::Vector3f map_error = evaluate_map_cumulative_error("../data/world.dat", "result_map.txt", matched_points); 
 
 
-    std::cout << "\n RMSE: " << map_rmse[0] << ", matched point: " << map_rmse[1] << std::endl;
+    std::cout << "\nRMSE: " << map_rmse[0] << ", matched point: " << map_rmse[1] << std::endl;
     std::cout << "Map cumulative error: " << map_error[0] << ", matched point: " << map_error[1] << std::endl;
     std::cout << "Mean error (x, y, z): " << map_error[0] / matched_points << ", " << map_error[1] / matched_points << ", " << map_error[2] / matched_points << std::endl;
 
+    std::ofstream outfile("evaluation_map.txt");
 
+    if (outfile.is_open()) {
+        outfile << "\nRMSE: " << map_rmse[0] << ", matched point: " << map_rmse[1] << std::endl;
+        outfile << "Map cumulative error: " << map_error[0] << ", matched point: " << map_error[1] << std::endl;
+        outfile << "Mean error (x, y, z): " << map_error[0] / matched_points << ", " << map_error[1] / matched_points << ", "  << map_error[2] / matched_points << std::endl;
+        outfile.close();
+
+        std::cout << "Evaluation map written in: evaluation_map.txt" << std::endl;
+
+    }
 }
