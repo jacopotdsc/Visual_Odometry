@@ -15,7 +15,7 @@ The system is designed for educational and research purposes and includes variou
 ├── include/             # Header files (camera model, geometry, utils, etc.)
 ├── src/                 # Source files and tests
 │   └── test_file/       # Unit and integration tests
-├── data/                # Input data (camera intrinsics, measurements, world ground truth)
+├── data/                # Input data (camera intrinsics, measurements, world groundtruth)
 ├── exec/                # Executables, result plots, and output logs
 ├── build/               # Build directory (CMake output)
 ├── CMakeLists.txt       # CMake configuration
@@ -49,7 +49,7 @@ The system is designed for educational and research purposes and includes variou
 ## 📏 Metrics Used
 
 ### 1. **Trajectory Evaluation**  
-Measures the ratio between the estimated and ground truth relative translations:
+Measures the ratio between the estimated and groundtruth relative translations:
 
 $$
 \sum_i \frac{ \left\| \mathbf{T}_i(1{:}3\,4) \right\| }{ \left\| \mathbf{T}_i^{\text{gt}}(1{:}3\,4) \right\| }
@@ -58,7 +58,7 @@ $$
 ---
 
 ### 2. **Map Evaluation**  
-Compares estimated 3D landmarks against the ground truth positions using RMSE:
+Compares estimated 3D landmarks against the groundtruth positions using RMSE:
 
 $$
 RMSE = \frac{1}{N} \sqrt{ \sum_{i=1}^N \| \mathbf{X}_i^{\text{gt}} - \mathbf{X}_i^{\text{est}} \|^2 }
@@ -68,7 +68,7 @@ $$
 
 ### 3. **Translation and Rotation Errors**
 
-For each estimated pose compared with ground truth:
+For each estimated pose compared with groundtruth:
 
 - **Translation Evaluation**: Cumulative translation error over all frames.  
 - **Rotation Evaluation**: Cumulative rotation error over all frames.
@@ -95,7 +95,11 @@ Component-wise translation error and variance are also computed to capture per-a
 All result plots are located in the `exec/` folder:
 
 - `trajectory_complete.txt` — Estimated camera trajectory
-- `trajectory_gt.txt` — Ground truth trajectory
+- `trajectory_gt.txt` — Groundtruth trajectory
+- `result_map.txt` — Estimated map
+- `evaluation.txt` — Result on the estimated trajectory
+- `evaluation_map.txt` — Result on the estimated map
+- `plot_trajectories.png` — Plot of estimated trajectory vs groundtruth 
 - `landmarks_comparison.png` — Comparison between estimated and true 3D landmarks
 
 To generate plots:
@@ -103,5 +107,10 @@ To generate plots:
 python3 exec/show_trajectory.py trajectory_gt.txt trajectory_complete.txt
 python3 exec/show_map.py world.dat result_map.txt
 ```
+
+| Trajectory Plot                                  | Landmarks Comparison Plot                      |
+|-------------------------------------------------|-----------------------------------------------|
+| ![Trajectory](exec/plot_trajectories.png)        | ![Landmarks](exec/landmarks_comparison.png)   |
+
 
 
