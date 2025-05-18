@@ -41,7 +41,4 @@ int main(int argc, char** argv) {
     output.close();
     cout << "Matching complete. Results saved in 'output_pairs.txt'" << endl;
 
-    string input_file = "output_pairs.txt";  
-    string output_file = "output_pairs_cleaned.txt";  
-
 }

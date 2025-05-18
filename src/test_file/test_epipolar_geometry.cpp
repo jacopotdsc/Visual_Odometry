@@ -1,7 +1,7 @@
 #include "defs.h"
 #include "utils_world.h"
 #include "utils_file.h"
-#include "epipolar_geometry.h"
+#include "epipolar_utils.h"
 #include "picp_solver.h"
 
 void print_comparison(const Eigen::Isometry3f& X_est, const Eigen::Isometry3f& X_gt,const std::string title={}){
@@ -28,7 +28,10 @@ int main(int argc, char** argv) {
     // --------------------- CAMERA ---------------------
     std::string file_path_camera = "../data/camera.dat";
     Camera cam = read_camera_file(file_path_camera);
-    //std::cout << "[CAMPS] Camera matrix:\n" << cam.cameraMatrix() << std::endl;
+    cam.setWorldInCameraPose(Eigen::Isometry3f::Identity());
+    std::cout << "[CAMPS] Camera matrix:\n" << cam.cameraMatrix() << std::endl;
+    std::cout << "[CAMPS] Translation:" << cam.worldInCameraPose().translation().transpose() << std::endl;
+    std::cout << "[CAMPS] Rotation:\n" << cam.worldInCameraPose().linear() << std::endl;
 
     // --------------------- MEASUREMENTS ---------------------
     std::ostringstream oss_curr, oss_new;
@@ -52,22 +55,26 @@ int main(int argc, char** argv) {
     std::cout << "[PROJT] Points in current_measurements:    " << current_measurements.size() << std::endl;
 
     // --------------------- CORRISPONDENZE ---------------------
-    auto result_corr = perform_correspondences(file_path_meas_curr, file_path_meas_new);
-    CorresponcesPairVector corr_pair = result_corr.first;
-    IntPairVector correspondences = result_corr.second;
+    IntPairVector correspondences = perform_correspondences(file_path_meas_curr, file_path_meas_new);
+    for(size_t i=0; i < correspondences.size(); i++ ){
+        //std::cout << "[INFO] Pair: " << std::get<0>(correspondences[i]) << ", " << std::get<1>(correspondences[i]) << std::endl;
+    }
+    //auto result_corr = perform_correspondences(file_path_meas_curr, file_path_meas_new);
+    //CorresponcesPairVector corr_pair = result_corr.first;
+    //IntPairVector correspondences = result_corr.second;
 
     std::cout << "[CORRS] Correspondences: " << correspondences.size() << std::endl;
-
+    
     // --------------------- STIMA TRASFORMAZIONE EPIPOLARE ---------------------
     Eigen::Isometry3f X_est = estimate_transform(cam.cameraMatrix(), correspondences, reference_image_points, current_measurements);
     //print_comparison(X_est,X_gt1,"**********EPIPOLAR RESULTS**********");
-    //std::cout << "[EP] translation: " << X_est.translation().transpose() << std::endl;
+    std::cout << "[EP] translation: " << X_est.translation().transpose() << std::endl;
 
     // --------------------- TRIANGOLAZIONE ---------------------
     Vector3fVector world_points_est;
     IntPairVector correspondences_new;
     triangulate_points(cam.cameraMatrix(), X_est, correspondences, reference_image_points, current_measurements, world_points_est, correspondences_new);
-
+    
     // --------------------- PICP ---------------------
     PICPSolver solver;
     solver.setKernelThreshold(10000);
@@ -86,7 +93,7 @@ int main(int argc, char** argv) {
     Eigen::Isometry3f cam_in_world = cam.worldInCameraPose().inverse();
     //print_comparison(cam.worldInCameraPose(),*(X_gt1.inverse()),"**********PICP RESULTS**********");
     
-    //std::cout << "[IP] Translation (camera in world): " << cam_in_world.translation().transpose() << std::endl;
+    std::cout << "[IP] Translation (camera in world): " << cam_in_world.translation().transpose() << std::endl;
 
     // --------------------- READ GROUND TRUTH ---------------------
     std::string gt_file_path = "../data/trajectory.dat";

@@ -6,7 +6,7 @@
 int main() {
     std::cout << "TEST: read_meas_file" << std::endl;
     std::string file_path_meas = "../data/meas-00000.dat"; 
-    //std::vector<PointDataMeasurement> points = read_meas_file(file_path_meas);
+    
     PointCloud point_cloud = read_meas_file(file_path_meas);
     const auto point_vec = point_cloud.getPoints();
 
@@ -17,16 +17,17 @@ int main() {
 
     std::cout << "Read " << point_vec.size() << " from point cloud." << std::endl;
     for (size_t i = 0; i < size_t(5); i++) {
-        auto [x, y] = point_vec[i].image_point;
+        float x = point_vec[i].image_point[0];
+        float y = point_vec[i].image_point[1];
 
-        std::cout << "Point " << point_vec[i].local_id_and_appaerance[0] 
+        std::cout << "Point " << point_vec[i].local_point_id
                     << ", ( Actual ID: " << point_vec[i].actual_point_id << ") : (" 
                     << x << ", "
                     << y << ") "
                     << ", Appearance: [";
-        for (int j = 1; j < 11; j++) {
-            std::cout << point_vec[i].local_id_and_appaerance[j];
-            if (j < 10) std::cout << ", ";
+        for (int j = 0; j < 10; j++) {
+            std::cout << point_vec[i].appaerance[j];
+            if (j < 9) std::cout << ", ";
         }
         std::cout << "]\n";
     }
