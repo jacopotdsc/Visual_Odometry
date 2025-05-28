@@ -28,21 +28,50 @@ The system is designed for educational and research purposes and includes variou
 
 1. **Build the project:**
    ```bash
-   cd <path>/Visual_Odometry && mkdir build && cd build && cmake .. && make
+   cd <path>/Visual_Odometry && mkdir build && cd build && cmake .. && make && cd../exec
    ```
 
 2. **Run the executables:**
    ```bash
-   ./exec/vo_system                   # Look VO system working
-   ./exec/vo_system_evaluation        # VO system with evaluation information
-   ./exec/vo_system_evaluation_map    # VO system with map information
+   ./vo_system                   # Look VO system working
+   ./vo_system_evaluation        # VO system with evaluation information
+   ./vo_system_evaluation_map    # VO system with map information
    ```
 
 3. **Visualize results:**
    ```bash
-   python3 exec/show_trajectory.py <gt_file> <est_file>  # Plot camera trajectory
-   python3 exec/show_map.py <gt_map> <est_map.txt>       # Plot landmark map
+   python3 show_trajectory.py <gt_file> <est_file>  # Plot camera trajectory
+   python3 show_map.py <gt_map> <est_map.txt>       # Plot landmark map
    ```
+---
+## 🧪 Methodology
+
+The Visual Odometry system is divided into several functional modules, each responsible for a critical stage in the processing pipeline:
+
+### 🔧 Camera Modeling  
+This module defines the camera projection model. It uses the provided intrinsic parameters to map 3D world points to 2D image coordinates. It supports back-projection and normalization operations, which are essential for triangulation and point matching.
+
+### 📐 Geometric Estimation  
+This module implements core epipolar geometry techniques to estimate the relative motion between two image frames. It includes:
+- Computation of the fundamental and essential matrices  
+- Extraction of relative pose (R, t)  
+- Triangulation to recover observed 3D points  
+
+### 🔄 Pose Estimation  
+This module performs point-to-point alignment using the Iterative Closest Point (ICP) algorithm. It refines the relative pose between consecutive frames by minimizing the distance between corresponding 3D points. This step is crucial for correcting small errors and improving the robustness of trajectory estimation.
+
+### 🎥 Visual Odometry System  
+This is the central pipeline that orchestrates the full visual odometry process. It integrates the outputs from camera modeling, geometric estimation, and pose refinement to continuously estimate the camera's trajectory. It also manages the incremental reconstruction of a sparse 3D map of the environment, updating it as new observations become available.
+The system iterates over a sequence of 120 measurements. The procedure is structured as follows:
+
+1. **Initialization (first two frames):**  
+   The first two measurements are used to compute the initial relative pose using geometric estimation techniques. This step also provides the initial triangulation of 3D world points, serving as the foundation for the map.
+
+2. **Main loop (subsequent frames):**  
+   For each new frame *i*, the relative pose \( \mathbf{T}_{i-1}^i \) is estimated with respect to the previous frame *(i-1)* using the established 3D-2D correspondences and pose estimation techniques (e.g., PnP, ICP).
+
+3. **Global transformation:**  
+   Once the relative pose is computed, it is transformed into the global coordinate frame to maintain consistency across the full trajectory. The current pose and any new triangulated landmarks are expressed in the world frame.
 
 ---
 
@@ -104,8 +133,9 @@ All result plots are located in the `exec/` folder:
 
 To generate plots:
 ```bash
-python3 exec/show_trajectory.py trajectory_gt.txt trajectory_complete.txt
-python3 exec/show_map.py world.dat result_map.txt
+cd <path>/Visual_Odometry/exec
+python3 show_trajectory.py trajectory_gt.txt trajectory_complete.txt
+python3 show_map.py world.dat result_map.txt
 ```
 
 | Trajectory Plot                                  | Landmarks Comparison Plot                      |
