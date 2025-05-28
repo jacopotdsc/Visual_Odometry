@@ -68,7 +68,7 @@ The system iterates over a sequence of 120 measurements. The procedure is struct
    The first two measurements are used to compute the initial relative pose using geometric estimation techniques. This step also provides the initial triangulation of 3D world points, serving as the foundation for the map.
 
 2. **Main loop (subsequent frames):**  
-   For each new frame *i*, the relative pose \( \mathbf{T}_{i-1}^i \) is estimated with respect to the previous frame *(i-1)* using the established 3D-2D correspondences and pose estimation techniques (e.g., PnP, ICP).
+   For each new frame *i*, the relative pose $\( \mathbf{T}_{i-1}^i \)$ is estimated with respect to the previous frame *(i-1)* using the established 3D-2D correspondences and pose estimation techniques.
 
 3. **Global transformation:**  
    Once the relative pose is computed, it is transformed into the global coordinate frame to maintain consistency across the full trajectory. The current pose and any new triangulated landmarks are expressed in the world frame.
