@@ -127,6 +127,7 @@ Component-wise translation error and variance are also computed to capture per-a
 All result plots are located in the `exec/` folder:
 
 - **`plots/`** — Contains all generated plot images:
+  - `delta_error.png`
   - `delta_ration.png`
   - `map_2d.png`
   - `map_3d.png`
@@ -153,8 +154,8 @@ python3 show_delta.py delta_comparison.txt
 | Trajectory Plot                                 | Landmarks Comparison Plot    |
 |-------------------------------------------------|-----------------------------------------------|
 | ![Trajectory](exec/plots/trajectory_2d.png)     | ![Landmarks](exec/plots/map_2d.png)            |
-| Delta Ratio Plot                           |                              |
-| ![Delta Ratio](exec/plots/delta_ratio.png)    |                              |
+| Delta Plot                           |  Ratio Plot                            |
+| ![Delta](exec/plots/delta_error.png)    |    ![Ratio](exec/plots/delta_ratio.png)                          |
 
 
 

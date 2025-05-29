@@ -30,30 +30,30 @@ def plot_delta_comparison_2d(file_path):
 
     steps = list(range(len(error_x)))
 
-    # Create subplots: 2 rows, 1 column
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+    # Primo grafico: errori
+    plt.figure(figsize=(10, 4))
+    plt.plot(steps, error_x, label="Error in ΔX", marker='o')
+    plt.plot(steps, error_y, label="Error in ΔY", marker='x')
+    plt.ylabel("Error")
+    plt.title("Delta Error over Time")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("delta_error.png")
+    plt.show()
 
-    # Plot errors
-    ax1.plot(steps, error_x, label="Error in ΔX", marker='o')
-    ax1.plot(steps, error_y, label="Error in ΔY", marker='x')
-    ax1.set_ylabel("Error")
-    ax1.set_title("Delta Error over Time")
-    ax1.legend()
-    ax1.grid(True)
-
-    # Plot ratios
-    ax2.plot(steps, ratio_x, label="Ratio ΔX (est/gt)", linestyle='--')
-    ax2.plot(steps, ratio_y, label="Ratio ΔY (est/gt)", linestyle='--')
-    ax2.set_xlabel("Step")
-    ax2.set_ylabel("Ratio")
-    ax2.set_title("Delta Ratio over Time")
-    ax2.legend()
-    ax2.grid(True)
-
+    # Secondo grafico: rapporti
+    plt.figure(figsize=(10, 4))
+    plt.plot(steps, ratio_x, label="Ratio ΔX (est/gt)", linestyle='--')
+    plt.plot(steps, ratio_y, label="Ratio ΔY (est/gt)", linestyle='--')
+    plt.xlabel("Step")
+    plt.ylabel("Ratio")
+    plt.title("Delta Ratio over Time")
+    plt.legend()
+    plt.grid(True)
     plt.tight_layout()
     plt.savefig("delta_ratio.png")
     plt.show()
-
 
 
 
