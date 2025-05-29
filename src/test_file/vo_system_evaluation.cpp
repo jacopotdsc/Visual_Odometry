@@ -142,6 +142,8 @@ int main(int argc, char* argv[]) {
     Eigen::Vector3f translation_component_wise_error = evaluate_global_translation_error(gt_pose_glob, est_pose_glob);
     Eigen::Vector3f translation_variance = evaluate_global_translation_variance(gt_pose_glob, est_pose_glob, translation_component_wise_error);
 
+    write_pose_deltas(gt_pose_glob, est_pose_glob,"delta_comparison.txt");
+
     print_evaluations(translation_evaluation, rotation_evaluation, translation_component_wise_error, 
         translation_variance, est_pose_glob, gt_pose_glob, true, "evaluation.txt");
 

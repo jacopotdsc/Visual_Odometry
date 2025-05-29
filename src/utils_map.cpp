@@ -20,6 +20,7 @@ void rel2Glob(CustomVector<Vector3fVector>& vector_world_rel, IsometryVector& es
     Vector3fVector current_world_glob;
     Eigen::Isometry3f rf_camera_rotation = Eigen::Isometry3f::Identity();
     rf_camera_rotation.linear() = Ry( 90 * 3.14159/180 ) * Rz( -90 * 3.14159/180 );
+    rf_camera_rotation.translation() = Eigen::Vector3f(0.2, 0.0, 0.0);
 
     Eigen::Isometry3f pose_global = Eigen::Isometry3f::Identity();
     for( size_t i=0; i < vector_world_rel.size(); i++){

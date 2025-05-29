@@ -20,6 +20,7 @@ void rel2Glob(IsometryVector& relative_poses, IsometryVector& global_poses){
 
     Eigen::Isometry3f rf_camera_rotation = Eigen::Isometry3f::Identity();
     rf_camera_rotation.linear() = Ry( 90 * 3.14159/180 ) * Rz( -90 * 3.14159/180 );
+    rf_camera_rotation.translation() = Eigen::Vector3f(0.2, 0.0, 0.0);
 
     Eigen::Isometry3f pose_global = Eigen::Isometry3f::Identity();
     for (const auto& pose : relative_poses) { 
@@ -128,6 +129,39 @@ Eigen::Vector3f evaluate_global_translation_variance(const IsometryVector& gt_gl
 
     return Eigen::Vector3f(var_x, var_y, var_z) / ( gt_global_poses.size() - 1); 
 }
+
+void write_pose_deltas(const IsometryVector& est_pose_glob,
+                       const IsometryVector& gt_pose_glob,
+                       const std::string& output_filename = "delta_comparison.txt") {
+    if (est_pose_glob.size() != gt_pose_glob.size()) {
+        std::cerr << "Error: est_pose_glob and gt_pose_glob must have the same size!" << std::endl;
+        return;
+    }
+
+    std::ofstream out_file(output_filename);
+    if (!out_file) {
+        std::cerr << "Error opening " << output_filename << " for writing." << std::endl;
+        return;
+    }
+
+    for (size_t i=1; i < est_pose_glob.size(); i++) {
+
+        Eigen::Vector3f delta_gt  = gt_pose_glob[i].translation() - gt_pose_glob[i-1].translation();
+        Eigen::Vector3f delta_est = est_pose_glob[i].translation() - est_pose_glob[i-1].translation();
+
+        Eigen::Vector3f ratio;
+        for (int j = 0; j < 3; ++j) {
+            ratio[j] = (std::abs(delta_gt[j]) > 1e-6f) ? delta_est[j] / delta_gt[j] : 0.0f;
+        }
+
+        out_file << delta_gt.transpose() << " " << delta_est.transpose() << " " << ratio.transpose() << "\n";
+             
+    }
+
+    out_file.close();
+    std::cout << "Pose deltas written to: " << output_filename << std::endl;
+}
+
 
 void print_evaluations(float translation_evaluation, float rotation_evaluation, 
                        const Eigen::Vector3f& translation_component_wise_error, 
