@@ -8,6 +8,6 @@ Translation Evaluation Mean: 0.131167
 Rotation Evaluation Mean: 0.00977395
 
 ------- Other Evaluation:
-Translation Error: -257.059 -255.693  -18.069
-Mean Translation Error:  -2.12446  -2.11317 -0.149331
+Translation Error: -281.259 -255.693  -18.069
+Mean Translation Error:  -2.32446  -2.11317 -0.149331
 Translation Variance: 0.994019  1.43834  2.98713

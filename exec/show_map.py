@@ -65,7 +65,7 @@ def plot_landmarks_3d(gt_file, est_file, frequency=1.0):
     ax.legend()
     ax.grid(True)
     plt.tight_layout()
-    plt.savefig("landmarks_comparison.png")
+    plt.savefig("map_3d.png")
     plt.show()
 
 def plot_landmarks_2d(gt_file, est_file, frequency=1.0):
@@ -100,7 +100,7 @@ def plot_landmarks_2d(gt_file, est_file, frequency=1.0):
     ax.grid(True)
     ax.axis('equal')  # opzionale, mantiene proporzioni corrette
     plt.tight_layout()
-    plt.savefig("landmarks_comparison_2d.png")
+    plt.savefig("map_2d.png")
     plt.show()
 
 
@@ -116,5 +116,5 @@ if __name__ == "__main__":
     if not (0.0 < args.frequency <= 1.0):
         raise ValueError("Frequency must be a float between 0 (exclusive) and 1 (inclusive).")
 
-    plot_landmarks_2d(args.gt_file, args.est_file, frequency=args.frequency)
+    plot_landmarks_3d(args.gt_file, args.est_file, frequency=args.frequency)
 

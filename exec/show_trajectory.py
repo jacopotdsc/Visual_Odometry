@@ -45,7 +45,7 @@ def plot_trajectories_3d(gt_file='gt_trajectory.csv', est_file='estimated_trajec
     ax.legend()
     ax.grid(True)
     plt.tight_layout()
-    plt.savefig("plot_trajectories.png")
+    plt.savefig("trajectory_2d.png")
     plt.show()
 
 def plot_trajectories_2d(gt_file='gt_trajectory.csv', est_file='estimated_trajectory.csv'):
@@ -69,7 +69,7 @@ def plot_trajectories_2d(gt_file='gt_trajectory.csv', est_file='estimated_trajec
     ax.legend()
     ax.grid(True)
     plt.tight_layout()
-    plt.savefig("plot_trajectories.png")
+    plt.savefig("trajectory_3d.png")
     plt.show()
 
 if __name__ == "__main__":

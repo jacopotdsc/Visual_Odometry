@@ -51,6 +51,7 @@ def plot_delta_comparison_2d(file_path):
     ax2.grid(True)
 
     plt.tight_layout()
+    plt.savefig("delta_ration.png")
     plt.show()
 
 
