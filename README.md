@@ -130,8 +130,10 @@ All result plots are located in the `exec/` folder:
   - `delta_error.png`
   - `delta_ration.png`
   - `map_2d.png`
+  - `map_2d_scaled.png`
   - `map_3d.png`
   - `trajectory_2d.png`
+  - `trajectory_2d_scaled.png`
   - `trajectory_3d.png`
 
 - **`result_txt/`** — Contains output text files with results:
@@ -139,7 +141,9 @@ All result plots are located in the `exec/` folder:
   - `evaluation.txt` — Result on the estimated trajectory
   - `evaluation_map.txt` — Result on the estimated map
   - `result_map.txt` — Estimated map
+  - `result_map_scaled.txt` — Scaled estimated map
   - `trajectory_complete.txt` — Estimated camera trajectory
+  - `trajectory_complete_scaled.txt` — Scaled estimated camera trajectory
   - `trajectory_gt.txt` — Groundtruth trajectory
   - `world.txt`
 
