@@ -150,9 +150,11 @@ python3 show_map.py world.dat result_map.txt
 python3 show_delta.py delta_comparison.txt
 ```
 
-| Trajectory Plot                                 | Delta Ratio Plot | Landmarks Comparison Plot                      |
-|-------------------------------------------------| ------------------------------------------------- |-----------------------------------------------|
-| ![Trajectory](exec/plots/trajectory_2d.png)     | ![Delta Ratio](exec/plots/delta_ration.png)  | ![Landmarks](exec/plot/map_2d.png)            |
+| Trajectory Plot                                 | Landmarks Comparison Plot    |
+|-------------------------------------------------|-----------------------------------------------|
+| ![Trajectory](exec/plots/trajectory_2d.png)     | ![Landmarks](exec/plots/map_2d.png)            |
+| Delta Ratio Plot                           |                              |
+| ![Delta Ratio](exec/plots/delta_ration.png)    |                              |
 
 
 
