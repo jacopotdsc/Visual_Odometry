@@ -130,9 +130,10 @@ Eigen::Vector3f evaluate_global_translation_variance(const IsometryVector& gt_gl
     return Eigen::Vector3f(var_x, var_y, var_z) / ( gt_global_poses.size() - 1); 
 }
 
-void write_pose_deltas(const IsometryVector& est_pose_glob,
-                       const IsometryVector& gt_pose_glob,
-                       const std::string& output_filename = "delta_comparison.txt") {
+void write_pose_deltas(  const IsometryVector& est_pose_glob,
+                        const IsometryVector& gt_pose_glob,
+                        Vector3fVector& ratio_glob,
+                        const std::string& output_filename) {
     if (est_pose_glob.size() != gt_pose_glob.size()) {
         std::cerr << "Error: est_pose_glob and gt_pose_glob must have the same size!" << std::endl;
         return;
@@ -154,6 +155,7 @@ void write_pose_deltas(const IsometryVector& est_pose_glob,
             ratio[j] = (std::abs(delta_gt[j]) > 1e-6f) ? delta_est[j] / delta_gt[j] : 0.0f;
         }
 
+        ratio_glob.emplace_back(ratio);
         out_file << delta_gt.transpose() << " " << delta_est.transpose() << " " << ratio.transpose() << "\n";
              
     }
@@ -168,6 +170,7 @@ void print_evaluations(float translation_evaluation, float rotation_evaluation,
                        const Eigen::Vector3f& translation_variance, 
                        const IsometryVector& est_pose_glob, 
                        const IsometryVector& gt_pose_glob,
+                       Vector3fVector& ratio_glob,
                        bool write_to_file, const std::string& filename) {
     // If the flag is true, open the file
     std::ofstream output_file;

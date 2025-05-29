@@ -29,14 +29,24 @@ Vector7fVector read_trajectory_file(const std::string& file_path);
 Vector14fVector read_world_file(const std::string& file_path);
 
 /**
- * @brief write on file ground thruth point and estimated onees
+ * @brief write on file ground thruth point and estimated ones
  */
 void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points, std::string gt_file_name, std::string est_file_name);
+
+/**
+ * @brief write on file ground thruth point and scaled estimated onee
+ */
+void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points, Vector3fVector ratio_glob, std::string gt_file_name, std::string est_file_name);
 
 /**
  * @brief write on file world points
  */
 void write_world_on_file(   CustomVector<Vector3fVector> vector_world_glob, CustomVector<Vector10fVector> vector_world_appearances, const std::string& filename);
+
+/**
+ * @brief write on file world points
+ */
+void write_world_on_file(   CustomVector<Vector3fVector> vector_world_glob, CustomVector<Vector10fVector> vector_world_appearances, Vector3fVector ratio_glob, const std::string& filename);
 
 /**
  * @brief estimate map and write it

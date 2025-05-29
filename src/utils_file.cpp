@@ -185,6 +185,33 @@ void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated
     std::cout << "Curve trajectories saved to " << gt_file_name << " and " << est_file_name << std::endl;
 }
 
+void write_trajectory_on_file(Vector3fVector gt_points, Vector3fVector estimated_points, Vector3fVector ratio_glob, std::string gt_file_name, std::string est_file_name){
+    std::ofstream gt_file(gt_file_name);
+    gt_file << "x,y,z\n";
+    for (const auto& p : gt_points)
+        gt_file << p.x() << "," << p.y() << "," << p.z() << "\n";
+    gt_file.close();
+
+    std::ofstream est_file(est_file_name);
+    est_file << "x,y\n";
+
+    Eigen::Vector3f ratio_sum(0.0f, 0.0f, 0.0f);
+    size_t n = ratio_glob.size();
+    for (const auto& r : ratio_glob) {
+        ratio_sum += r;
+    }
+    Eigen::Vector3f ratio_avg = (n > 0) ? (ratio_sum / float(n)) : Eigen::Vector3f(1.0f, 1.0f, 1.0f);
+    
+    for (size_t i = 0; i < estimated_points.size(); ++i) {
+
+        auto scaled_point = estimated_points[i].cwiseProduct(ratio_avg);  
+        est_file << scaled_point.x() << "," << scaled_point.y() << "," << scaled_point.z() << "\n";
+    }
+    est_file.close();
+
+    std::cout << "Curve trajectories saved to " << gt_file_name << " and " << est_file_name << std::endl;
+}
+
 void write_world_on_file(   CustomVector<Vector3fVector> vector_world_glob, 
                             CustomVector<Vector10fVector> vector_world_appearances, 
                             const std::string& filename){
@@ -229,6 +256,61 @@ void write_world_on_file(   CustomVector<Vector3fVector> vector_world_glob,
 
     file.close();
     std::cout << "Writting world points in " << filename << std::endl;
+}
+
+void write_world_on_file(   CustomVector<Vector3fVector> vector_world_glob, 
+                            CustomVector<Vector10fVector> vector_world_appearances, 
+                            Vector3fVector ratio_glob,
+                            const std::string& filename){
+
+    std::ofstream file(filename ); 
+
+    if (!file.is_open()) {
+    std::cerr << "[ERROR] Can't open " << filename << ".txt\n";
+    return;
+    }
+
+    assert( vector_world_glob.size() == vector_world_appearances );
+
+
+    Eigen::Vector3f ratio_sum(0.0f, 0.0f, 0.0f);
+    size_t n = ratio_glob.size();
+    for (const auto& r : ratio_glob) {
+        ratio_sum += r;
+    }
+    Eigen::Vector3f ratio_avg = (n > 0) ? (ratio_sum / float(n)) : Eigen::Vector3f(1.0f, 1.0f, 1.0f);
+
+    // Iteration all over vector of each measurement
+    for( size_t idx_meas=0; idx_meas < vector_world_appearances.size(); idx_meas++){
+
+        Vector3fVector vector_world_curr = vector_world_glob[idx_meas];
+        Vector10fVector vector_appearances = vector_world_appearances[idx_meas];
+
+        assert( vector_world_curr.size() == vector_appearances.size() );
+
+        // ITeration over the measurement
+        for( size_t idx_point=0; idx_point < vector_world_curr.size(); idx_point++){
+
+        Eigen::Vector3f world_point_curr = vector_world_curr[idx_point].cwiseProduct(ratio_avg); 
+        Vector10f appearance_point_curr = vector_appearances[idx_point];
+
+        // Writing coordinate
+        for( const auto& coord: world_point_curr){
+            file << coord  << " "; 
+        }
+
+        // Writing appearances
+        for( const auto& app : appearance_point_curr){
+            file << app << " ";
+        }
+        file << "\n";
+
+    }
+
+}
+
+file.close();
+std::cout << "Writting world points in " << filename << std::endl;
 }
 
 std::string join_appearance(const std::vector<std::string>& tokens, size_t start_index) {

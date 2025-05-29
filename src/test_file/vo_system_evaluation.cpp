@@ -120,7 +120,10 @@ int main(int argc, char* argv[]) {
         est_point_glob.push_back(pose.translation());
     }
 
-    write_trajectory_on_file(gt_point_glob, est_point_glob, "trajectory_gt.txt", "trajectory_complete.txt");
+
+    Vector3fVector ratio_glob;
+    //write_trajectory_on_file(gt_point_glob, est_point_glob, "trajectory_gt.txt", "trajectory_complete.txt");
+
 
     // --------------------- EVALUATION ---------------------
     // Augmenting groundthruth to SE(3)
@@ -142,10 +145,11 @@ int main(int argc, char* argv[]) {
     Eigen::Vector3f translation_component_wise_error = evaluate_global_translation_error(gt_pose_glob, est_pose_glob);
     Eigen::Vector3f translation_variance = evaluate_global_translation_variance(gt_pose_glob, est_pose_glob, translation_component_wise_error);
 
-    write_pose_deltas(gt_pose_glob, est_pose_glob,"delta_comparison.txt");
+    write_pose_deltas(gt_pose_glob, est_pose_glob, ratio_glob, "delta_comparison.txt");
+    write_trajectory_on_file(gt_point_glob, est_point_glob, ratio_glob, "trajectory_gt.txt", "trajectory_complete_scaled.txt");
 
-    print_evaluations(translation_evaluation, rotation_evaluation, translation_component_wise_error, 
-        translation_variance, est_pose_glob, gt_pose_glob, true, "evaluation.txt");
+    //print_evaluations(translation_evaluation, rotation_evaluation, translation_component_wise_error, 
+    //    translation_variance, est_pose_glob, gt_pose_glob, ratio_glob, true, "evaluation.txt");
 
 }
 

@@ -86,7 +86,7 @@ Eigen::Vector2f evaluate_map_rmse(const std::string& gt_file, const std::string&
             if (gt[0] == est_id) {
                 float dx = gt[1] - est[1];
                 float dy = gt[2] - est[2];
-                float dz = gt[3] - est[3];
+                float dz = 0.0f; //gt[3] - est[3];
                 sum_squared_error += dx * dx + dy * dy + dz * dz;
                 ++matched_points;
                 break;

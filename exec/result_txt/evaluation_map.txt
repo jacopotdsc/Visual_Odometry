@@ -1,4 +1,4 @@
 
-RMSE: 7.1713, matched point: 512
-Map cumulative error: 1602.12, matched point: 2210.6
-Mean error (x, y, z): 3.12914, 4.31757, 0.917914
+RMSE: 5.64279, matched point: 512
+Map cumulative error: 1288.94, matched point: 1828.27
+Mean error (x, y, z): 2.51747, 3.57085, 1373.99

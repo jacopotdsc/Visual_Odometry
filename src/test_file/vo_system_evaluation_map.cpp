@@ -142,6 +142,8 @@ int main(int argc, char* argv[]) {
         est_point_glob.push_back(pose.translation());
     }
 
+
+    Vector3fVector ratio_glob;
     write_trajectory_on_file(gt_point_glob, est_point_glob, "trajectory_gt.txt", "trajectory_complete.txt");
 
     // --------------------- TRAJECTORY EVALUATION ---------------------
@@ -164,6 +166,9 @@ int main(int argc, char* argv[]) {
     Eigen::Vector3f translation_component_wise_error = evaluate_global_translation_error(gt_pose_glob, est_pose_glob);
     Eigen::Vector3f translation_variance = evaluate_global_translation_variance(gt_pose_glob, est_pose_glob, translation_component_wise_error);
 
+    write_pose_deltas(gt_pose_glob, est_pose_glob, ratio_glob, "delta_comparison.txt");
+    write_trajectory_on_file(gt_point_glob, est_point_glob, ratio_glob, "trajectory_gt.txt", "trajectory_complete_scaled.txt");
+
     //print_evaluations(translation_evaluation, rotation_evaluation, translation_component_wise_error, 
     //    translation_variance, est_pose_glob, gt_pose_glob, true, "evaluation.txt");
 
@@ -173,12 +178,13 @@ int main(int argc, char* argv[]) {
     CustomVector<Vector3fVector> vector_world_glob;
     rel2Glob(vector_world_rel, est_pose_rel, vector_world_glob);
 
-    write_world_on_file(vector_world_glob, vector_world_appearances, "world.txt");
-    match_appearance_and_write("../data/world.dat", "world.txt", "result_map.txt");
+    //write_world_on_file(vector_world_glob, vector_world_appearances, "world.txt");
+    write_world_on_file(vector_world_glob, vector_world_appearances, ratio_glob, "world_scaled.txt");
+    match_appearance_and_write("../data/world.dat", "world_scaled.txt", "result_map_scaled.txt");
     
-    Eigen::Vector2f map_rmse = evaluate_map_rmse("../data/world.dat", "result_map.txt");
+    Eigen::Vector2f map_rmse = evaluate_map_rmse("../data/world.dat", "result_map_scaled.txt");
     int matched_points = map_rmse[1];
-    Eigen::Vector3f map_error = evaluate_map_cumulative_error("../data/world.dat", "result_map.txt", matched_points); 
+    Eigen::Vector3f map_error = evaluate_map_cumulative_error("../data/world.dat", "result_map_scaled.txt", matched_points); 
 
 
     std::cout << "\nRMSE: " << map_rmse[0] << ", matched point: " << map_rmse[1] << std::endl;

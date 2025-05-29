@@ -51,7 +51,7 @@ Eigen::Vector3f evaluate_global_translation_variance(const IsometryVector& gt_gl
  * @param gt_pose_glob Vector of ground truth global poses (Isometry3f)
  * @param output_filename Name of the output file where deltas will be saved (default: "delta_comparison.txt")
  */
-void write_pose_deltas(const IsometryVector& est_pose_glob, const IsometryVector& gt_pose_glob, const std::string& output_filename);
+void write_pose_deltas(const IsometryVector& est_pose_glob, const IsometryVector& gt_pose_glob, Vector3fVector& ratio_glob, const std::string& output_filename);
 
 /**
  * @brief print evaluation
@@ -61,4 +61,5 @@ void print_evaluations(float translation_evaluation, float rotation_evaluation,
     const Eigen::Vector3f& translation_variance, 
     const IsometryVector& est_pose_glob, 
     const IsometryVector& gt_pose_glob,
+    Vector3fVector& ratio_glob,
     bool write_to_file, const std::string& filename = "");

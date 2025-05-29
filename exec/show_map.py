@@ -116,5 +116,5 @@ if __name__ == "__main__":
     if not (0.0 < args.frequency <= 1.0):
         raise ValueError("Frequency must be a float between 0 (exclusive) and 1 (inclusive).")
 
-    plot_landmarks_3d(args.gt_file, args.est_file, frequency=args.frequency)
+    plot_landmarks_2d(args.gt_file, args.est_file, frequency=args.frequency)
 
