@@ -154,7 +154,7 @@ python3 show_delta.py delta_comparison.txt
 |-------------------------------------------------|-----------------------------------------------|
 | ![Trajectory](exec/plots/trajectory_2d.png)     | ![Landmarks](exec/plots/map_2d.png)            |
 | Delta Ratio Plot                           |                              |
-| ![Delta Ratio](exec/plots/delta_ration.png)    |                              |
+| ![Delta Ratio](exec/plots/delta_ratio.png)    |                              |
 
 
 
